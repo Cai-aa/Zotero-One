@@ -2,6 +2,7 @@ import { config } from "../package.json";
 import { ColumnOptions, DialogHelper } from "zotero-plugin-toolkit";
 import hooks from "./hooks";
 import { createZToolkit } from "./utils/ztoolkit";
+import { ItemNumberingFactory } from "./modules/itemNumbering";
 
 class Addon {
   public data: {
@@ -19,6 +20,7 @@ class Addon {
       rows: Array<{ [dataKey: string]: string }>;
     };
     dialog?: DialogHelper;
+    itemNumbering?: ItemNumberingFactory;
   };
   // Lifecycle hooks
   public hooks: typeof hooks;

@@ -3,16 +3,16 @@
 /* eslint-disable */
 // @ts-nocheck
 export type FluentMessageId =
+  | 'column-number-label'
   | 'item-info-row-example-label'
   | 'item-section-example1-head-text'
   | 'item-section-example1-sidenav-tooltip'
   | 'item-section-example2-button-tooltip'
   | 'item-section-example2-head-text'
   | 'item-section-example2-sidenav-tooltip'
-  | 'menuitem-filemenulabel'
-  | 'menuitem-label'
-  | 'menuitem-submenulabel'
-  | 'menupopup-label'
+  | 'menuitem-toggle-numbering'
+  | 'numbering-disabled'
+  | 'numbering-enabled'
   | 'pref-enable'
   | 'pref-help'
   | 'pref-input'
@@ -23,4 +23,6 @@ export type FluentMessageId =
   | 'startup-begin'
   | 'startup-finish'
   | 'tabpanel-lib-tab-label'
-  | 'tabpanel-reader-tab-label';
+  | 'tabpanel-reader-tab-label'
+  | 'toolbar-toggle-numbering'
+  | 'toolbar-toggle-numbering-tooltip';

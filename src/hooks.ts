@@ -8,6 +8,7 @@ import {
 import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { createZToolkit } from "./utils/ztoolkit";
+import { ItemNumberingFactory } from "./modules/itemNumbering";
 
 async function onStartup() {
   await Promise.all([
@@ -24,11 +25,11 @@ async function onStartup() {
 
   KeyExampleFactory.registerShortcuts();
 
-  await UIExampleFactory.registerExtraColumn();
-
-  await UIExampleFactory.registerExtraColumnWithCustomCell();
-
-  UIExampleFactory.registerItemPaneCustomInfoRow();
+  // Initialize item numbering
+  addon.data.itemNumbering = new ItemNumberingFactory();
+  await ItemNumberingFactory.registerNumberingColumn();
+  ItemNumberingFactory.registerContextMenu();
+  ItemNumberingFactory.registerToolbarButton();
 
   UIExampleFactory.registerItemPaneSection();
 
@@ -122,8 +123,11 @@ async function onNotify(
     extraData[ids[0]].type == "reader"
   ) {
     BasicExampleFactory.exampleNotifierCallback();
-  } else {
-    return;
+  }
+  
+  // Handle item changes for numbering
+  if (type === "item" && addon.data.itemNumbering) {
+        ItemNumberingFactory.handleItemChange(event, type, ids as number[]);
   }
 }
 

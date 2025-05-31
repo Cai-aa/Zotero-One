@@ -143,7 +143,7 @@ export class UIExampleFactory {
     ztoolkit.Menu.register("item", {
       tag: "menuitem",
       id: "zotero-itemmenu-addontemplate-test",
-      label: getString("menuitem-label"),
+      label: "Example Menu Item",
       commandListener: (ev) => addon.hooks.onDialogEvents("dialogExample"),
       icon: menuIcon,
     });
@@ -155,11 +155,11 @@ export class UIExampleFactory {
       "item",
       {
         tag: "menu",
-        label: getString("menupopup-label"),
+        label: "Example Popup",
         children: [
           {
             tag: "menuitem",
-            label: getString("menuitem-submenulabel"),
+            label: "Example Submenu",
             oncommand: "alert('Hello World! Sub Menuitem.')",
           },
         ],
@@ -179,7 +179,7 @@ export class UIExampleFactory {
     // menu->File menuitem
     ztoolkit.Menu.register("menuFile", {
       tag: "menuitem",
-      label: getString("menuitem-filemenulabel"),
+      label: "Example File Menu",
       oncommand: "alert('Hello World! File Menuitem.')",
     });
   }
