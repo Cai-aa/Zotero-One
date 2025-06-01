@@ -1,0 +1,13 @@
+itemnumbering-startup-begin = 文献编号插件加载中
+itemnumbering-startup-finish = 文献编号插件已就绪
+itemnumbering-column-number-label = 编号
+itemnumbering-menuitem-toggle-numbering = 切换文献编号
+itemnumbering-toolbar-toggle-numbering = 切换编号
+itemnumbering-toolbar-toggle-numbering-tooltip = 切换文献编号显示
+itemnumbering-numbering-enabled = 文献编号已启用
+itemnumbering-numbering-disabled = 文献编号已禁用
+itemnumbering-prefs-title = 文献编号
+itemnumbering-prefs-table-title = 标题
+itemnumbering-prefs-table-detail = 详情
+itemnumbering-tabpanel-lib-tab-label = 库标签
+itemnumbering-tabpanel-reader-tab-label = 阅读器标签

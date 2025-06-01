@@ -1,0 +1,19 @@
+{
+  "addons": {
+    "itemnumbering@zotero.plugin": {
+      "updates": [
+        {
+          "version": "0.1.0",
+          "update_link": "https://github.com/user/zotero-item-numbering/releases/download/v0.1.0/zotero-item-numbering.xpi",
+          "update_hash": "sha512:c7f87e2013662c002fb366db83165bea2f382723b03d75c988143d07700697c481e1db7dd3879fc58b3fc09baabee712855cc51762e8f63f118d87e1662c9e3a",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "6.999",
+              "strict_max_version": "7.*"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

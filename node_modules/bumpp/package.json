@@ -1,0 +1,90 @@
+{
+  "name": "bumpp",
+  "type": "module",
+  "version": "10.1.0",
+  "description": "Bump version, commit changes, tag, and push to Git",
+  "authors": [
+    {
+      "name": "Anthony Fu",
+      "url": "https://antfu.me"
+    },
+    {
+      "name": "James Messinger",
+      "url": "https://jamesmessinger.com"
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/antfu-collective/bumpp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antfu-collective/bumpp.git"
+  },
+  "keywords": [
+    "version",
+    "bump",
+    "npm",
+    "node",
+    "bower",
+    "package",
+    "git",
+    "tag",
+    "push",
+    "prompt"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "bin": {
+    "bumpp": "bin/bumpp.mjs"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ansis": "^3.17.0",
+    "args-tokenizer": "^0.3.0",
+    "c12": "^3.0.2",
+    "cac": "^6.7.14",
+    "escalade": "^3.2.0",
+    "jsonc-parser": "^3.3.1",
+    "package-manager-detector": "^1.0.0",
+    "semver": "^7.7.1",
+    "tinyexec": "^0.3.2",
+    "tinyglobby": "^0.2.12",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.8.1",
+    "@types/node": "^22.13.10",
+    "@types/prompts": "^2.4.9",
+    "@types/semver": "^7.5.8",
+    "eslint": "^9.22.0",
+    "prompts": "^2.4.2",
+    "rimraf": "^6.0.1",
+    "tiny-conventional-commits-parser": "^0.0.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "unbuild": "^3.5.0",
+    "vitest": "^3.0.8"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "build": "unbuild",
+    "stub": "unbuild --stub",
+    "start": "tsx src/cli/run.ts",
+    "test": "vitest",
+    "bumpp": "tsx src/cli/run.ts",
+    "release": "pnpm run bumpp && pnpm publish",
+    "typecheck": "tsc --noEmit"
+  }
+}

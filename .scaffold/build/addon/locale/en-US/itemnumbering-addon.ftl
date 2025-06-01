@@ -1,0 +1,13 @@
+itemnumbering-startup-begin = Item Numbering plugin is loading
+itemnumbering-startup-finish = Item Numbering plugin is ready
+itemnumbering-column-number-label = #
+itemnumbering-menuitem-toggle-numbering = Toggle Item Numbering
+itemnumbering-toolbar-toggle-numbering = Toggle Numbering
+itemnumbering-toolbar-toggle-numbering-tooltip = Toggle item numbering display
+itemnumbering-numbering-enabled = Item numbering enabled
+itemnumbering-numbering-disabled = Item numbering disabled
+itemnumbering-prefs-title = Item Numbering
+itemnumbering-prefs-table-title = Title
+itemnumbering-prefs-table-detail = Detail
+itemnumbering-tabpanel-lib-tab-label = Lib Tab
+itemnumbering-tabpanel-reader-tab-label = Reader Tab
