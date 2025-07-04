@@ -26,7 +26,7 @@ async function onStartup() {
   KeyExampleFactory.registerShortcuts();
 
   // Initialize item numbering
-  addon.data.itemNumbering = new ItemNumberingFactory();
+  addon.data.itemNumbering = ItemNumberingFactory;
   await ItemNumberingFactory.registerNumberingColumn();
   ItemNumberingFactory.registerContextMenu();
   ItemNumberingFactory.registerToolbarButton();
@@ -126,8 +126,13 @@ async function onNotify(
   }
   
   // Handle item changes for numbering
-  if (type === "item" && addon.data.itemNumbering) {
-        ItemNumberingFactory.handleItemChange(event, type, ids as number[]);
+  if (addon.data.itemNumbering) {
+    if (type === "item") {
+      ItemNumberingFactory.handleItemChange(event, type, ids as number[]);
+    }
+    if (type === "collection" || event === "select") {
+      ItemNumberingFactory.handleItemChange(event, type, ids as number[]);
+    }
   }
 }
 

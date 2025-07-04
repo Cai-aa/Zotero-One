@@ -4981,33 +4981,69 @@ Input: ${dialogData.inputValue}.`
   }
 
   // src/modules/itemNumbering.ts
-  var ItemNumberingFactory = class {
+  var ItemNumberingFactory = class _ItemNumberingFactory {
     static numberingEnabled = true;
     static itemNumbers = /* @__PURE__ */ new Map();
-    static currentNumber = 1;
+    static collectionNumbers = /* @__PURE__ */ new Map();
+    // 存储每个集合的编号计数器
+    static currentCollectionID = null;
     /**
      * 注册文献编号列
      */
     static async registerNumberingColumn() {
-      await Zotero.ItemTreeManager.registerColumns([
-        {
-          dataKey: "itemNumber",
-          label: getString("column-number-label"),
-          pluginID: addon.data.config.addonID,
-          dataProvider: (item, dataKey) => {
-            return this.getItemNumber(item);
-          },
-          renderCell(index, data, column, isFirstColumn, doc) {
-            const span = doc.createElement("span");
-            span.textContent = data;
-            span.style.textAlign = "center";
-            span.style.fontWeight = "bold";
-            span.style.color = "#666";
-            return span;
-          },
-          width: "50"
-        }
-      ]);
+      try {
+        ztoolkit.log("Registering item numbering column...");
+        await Zotero.ItemTreeManager.registerColumns([
+          {
+            dataKey: "itemNumber",
+            label: getString("column-number-label"),
+            pluginID: addon.data.config.addonID,
+            dataProvider: (item, dataKey) => {
+              return this.getItemNumber(item);
+            },
+            renderCell(index, data, column, isFirstColumn, doc) {
+              const span = doc.createElement("span");
+              span.textContent = data;
+              span.style.textAlign = "center";
+              span.style.fontWeight = "normal";
+              span.style.color = "#666";
+              span.style.fontSize = "12px";
+              span.style.display = "flex";
+              span.style.alignItems = "center";
+              span.style.justifyContent = "center";
+              span.style.height = "100%";
+              span.style.width = "100%";
+              span.style.boxSizing = "border-box";
+              return span;
+            },
+            width: "50"
+          }
+        ]);
+        ztoolkit.log("Item numbering column registered successfully");
+        this.registerCollectionSelectionListener();
+      } catch (error) {
+        ztoolkit.log("Error registering item numbering column:", error);
+      }
+    }
+    /**
+     * 注册集合选择变化监听器
+     */
+    static registerCollectionSelectionListener() {
+      const win = Zotero.getMainWindow();
+      if (!win || !win.ZoteroPane) return;
+      const collectionsView = win.ZoteroPane.collectionsView;
+      if (!collectionsView || typeof collectionsView === "boolean") return;
+      const originalSelectCollection = collectionsView.selectCollection;
+      if (originalSelectCollection && typeof originalSelectCollection === "function") {
+        collectionsView.selectCollection = function(...args) {
+          const result = originalSelectCollection.apply(this, args);
+          setTimeout(async () => {
+            _ItemNumberingFactory.currentCollectionID = null;
+            await _ItemNumberingFactory.recalculateNumbers();
+          }, 100);
+          return result;
+        };
+      }
     }
     /**
      * 获取文献的编号
@@ -5017,18 +5053,89 @@ Input: ${dialogData.inputValue}.`
         return "";
       }
       const itemID = item.id;
-      if (!this.itemNumbers.has(itemID)) {
-        this.itemNumbers.set(itemID, this.currentNumber++);
+      const currentCollectionID = this.getCurrentCollectionID();
+      if (this.currentCollectionID !== currentCollectionID) {
+        this.currentCollectionID = currentCollectionID;
+        this.recalculateNumbersForCollection(currentCollectionID).catch(console.error);
+      }
+      if (!this.isItemInCurrentCollection(item, currentCollectionID)) {
+        return "";
       }
       return this.itemNumbers.get(itemID)?.toString() || "";
     }
     /**
      * 重新计算所有文献的编号
      */
-    static recalculateNumbers() {
-      this.itemNumbers.clear();
-      this.currentNumber = 1;
+    static async recalculateNumbers() {
+      const currentCollectionID = this.getCurrentCollectionID();
+      await this.recalculateNumbersForCollection(currentCollectionID);
       this.refreshItemTree();
+    }
+    /**
+     * 为特定集合重新计算编号
+     */
+    static async recalculateNumbersForCollection(collectionID) {
+      this.itemNumbers.clear();
+      let items = [];
+      if (collectionID === null) {
+        const libraryID = Zotero.Libraries.userLibraryID;
+        const allItems = await Zotero.Items.getAll(libraryID);
+        items = allItems.filter(
+          (item) => !item.isNote() && !item.isAttachment() && !item.getCollections().length
+        );
+      } else if (collectionID === -1) {
+        const libraryID = Zotero.Libraries.userLibraryID;
+        const allItems = await Zotero.Items.getAll(libraryID);
+        items = allItems.filter(
+          (item) => !item.isNote() && !item.isAttachment()
+        );
+      } else {
+        const collection = Zotero.Collections.get(collectionID);
+        if (collection) {
+          const childItems = collection.getChildItems();
+          items = childItems.filter(
+            (item) => !item.isNote() && !item.isAttachment()
+          );
+        }
+      }
+      items.sort((a, b) => {
+        const dateA = a.dateAdded || "";
+        const dateB = b.dateAdded || "";
+        return dateA.localeCompare(dateB);
+      });
+      items.forEach((item, index) => {
+        this.itemNumbers.set(item.id, index + 1);
+      });
+    }
+    /**
+     * 获取当前选中的集合ID
+     */
+    static getCurrentCollectionID() {
+      const win = Zotero.getMainWindow();
+      if (!win || !win.ZoteroPane) return null;
+      const zp = win.ZoteroPane;
+      if (!zp.collectionsView || !zp.collectionsView.selection) return null;
+      const selected = zp.collectionsView.getSelectedCollection();
+      if (!selected) {
+        const selectedLibraryID = zp.collectionsView.getSelectedLibraryID();
+        if (selectedLibraryID !== null) {
+          return -1;
+        }
+        return null;
+      }
+      return selected.id;
+    }
+    /**
+     * 检查文献是否属于当前集合
+     */
+    static isItemInCurrentCollection(item, collectionID) {
+      if (collectionID === null) {
+        return true;
+      }
+      if (collectionID === -1) {
+        return item.getCollections().length === 0;
+      }
+      return item.getCollections().includes(collectionID);
     }
     /**
      * 刷新项目树
@@ -5059,7 +5166,11 @@ Input: ${dialogData.inputValue}.`
      */
     static handleItemChange(event, type, ids) {
       if (type === "item" && (event === "add" || event === "delete" || event === "modify")) {
-        this.recalculateNumbers();
+        this.recalculateNumbers().catch(console.error);
+      }
+      if (type === "collection" && (event === "select" || event === "add" || event === "delete")) {
+        this.currentCollectionID = null;
+        this.recalculateNumbers().catch(console.error);
       }
     }
     /**
@@ -5112,7 +5223,7 @@ Input: ${dialogData.inputValue}.`
     BasicExampleFactory.registerPrefs();
     BasicExampleFactory.registerNotifier();
     KeyExampleFactory.registerShortcuts();
-    addon.data.itemNumbering = new ItemNumberingFactory();
+    addon.data.itemNumbering = ItemNumberingFactory;
     await ItemNumberingFactory.registerNumberingColumn();
     ItemNumberingFactory.registerContextMenu();
     ItemNumberingFactory.registerToolbarButton();
@@ -5170,8 +5281,13 @@ Input: ${dialogData.inputValue}.`
     if (event == "select" && type == "tab" && extraData[ids[0]].type == "reader") {
       BasicExampleFactory.exampleNotifierCallback();
     }
-    if (type === "item" && addon.data.itemNumbering) {
-      ItemNumberingFactory.handleItemChange(event, type, ids);
+    if (addon.data.itemNumbering) {
+      if (type === "item") {
+        ItemNumberingFactory.handleItemChange(event, type, ids);
+      }
+      if (type === "collection" || event === "select") {
+        ItemNumberingFactory.handleItemChange(event, type, ids);
+      }
     }
   }
   async function onPrefsEvent(type, data) {
