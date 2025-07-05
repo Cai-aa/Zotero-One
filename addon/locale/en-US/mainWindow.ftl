@@ -1,11 +1,11 @@
 item-section-example1-head-text =
-    .label = Plugin Template: Item Info
+    .label = Zotero One: Item Info
 item-section-example1-sidenav-tooltip =
-    .tooltiptext = This is Plugin Template section (item info)
+    .tooltiptext = Zotero One section (item info)
 item-section-example2-head-text =
-    .label = Plugin Template: Reader [{$status}]
+    .label = Zotero One: Reader [{$status}]
 item-section-example2-sidenav-tooltip =
-    .tooltiptext = This is Plugin Template section (reader)
+    .tooltiptext = Zotero One section (reader)
 item-section-example2-button-tooltip =
     .tooltiptext = Unregister this section
 item-info-row-example-label = Example Row

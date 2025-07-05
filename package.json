@@ -1,24 +1,24 @@
 {
-  "name": "zotero-item-numbering",
+  "name": "zotero-one",
   "type": "module",
   "version": "0.1.0",
-  "description": "Zotero Plugin for Item Numbering - Display sequential numbers before each item in the library",
+  "description": "Zotero One - Enhanced productivity plugin with item numbering and quick preview features",
   "config": {
-    "addonName": "Zotero Item Numbering",
-    "addonID": "itemnumbering@zotero.plugin",
-    "addonRef": "itemnumbering",
-    "addonInstance": "ItemNumbering",
-    "prefsPrefix": "extensions.zotero.itemnumbering"
+    "addonName": "Zotero One",
+    "addonID": "zotero-one@zotero.plugin",
+    "addonRef": "zotero-one",
+    "addonInstance": "ZoteroOne",
+    "prefsPrefix": "extensions.zotero.zotero-one"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/user/zotero-item-numbering.git"
+    "url": "git+https://github.com/user/zotero-one.git"
   },
   "author": "Zotero Plugin Developer",
   "bugs": {
-    "url": "https://github.com/user/zotero-item-numbering/issues"
+    "url": "https://github.com/user/zotero-one/issues"
   },
-  "homepage": "https://github.com/user/zotero-item-numbering#readme",
+  "homepage": "https://github.com/user/zotero-one#readme",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "zotero-plugin serve",

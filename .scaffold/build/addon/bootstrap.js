@@ -24,7 +24,7 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
   ].getService(Components.interfaces.amIAddonManagerStartup);
   var manifestURI = Services.io.newURI(rootURI + "manifest.json");
   chromeHandle = aomStartup.registerChrome(manifestURI, [
-    ["content", "itemnumbering", rootURI + "content/"],
+    ["content", "zotero-one", rootURI + "content/"],
   ]);
 
   /**
@@ -39,18 +39,18 @@ async function startup({ id, version, resourceURI, rootURI }, reason) {
   ctx._globalThis = ctx;
 
   Services.scriptloader.loadSubScript(
-    `${rootURI}/content/scripts/itemnumbering.js`,
+    `${rootURI}/content/scripts/zotero-one.js`,
     ctx,
   );
-  Zotero.ItemNumbering.hooks.onStartup();
+  Zotero.ZoteroOne.hooks.onStartup();
 }
 
 async function onMainWindowLoad({ window }, reason) {
-  Zotero.ItemNumbering?.hooks.onMainWindowLoad(window);
+  Zotero.ZoteroOne?.hooks.onMainWindowLoad(window);
 }
 
 async function onMainWindowUnload({ window }, reason) {
-  Zotero.ItemNumbering?.hooks.onMainWindowUnload(window);
+  Zotero.ZoteroOne?.hooks.onMainWindowUnload(window);
 }
 
 function shutdown({ id, version, resourceURI, rootURI }, reason) {
@@ -63,13 +63,13 @@ function shutdown({ id, version, resourceURI, rootURI }, reason) {
       Components.interfaces.nsISupports,
     ).wrappedJSObject;
   }
-  Zotero.ItemNumbering?.hooks.onShutdown();
+  Zotero.ZoteroOne?.hooks.onShutdown();
 
   Cc["@mozilla.org/intl/stringbundle;1"]
     .getService(Components.interfaces.nsIStringBundleService)
     .flushBundles();
 
-  Cu.unload(`${rootURI}/content/scripts/itemnumbering.js`);
+  Cu.unload(`${rootURI}/content/scripts/zotero-one.js`);
 
   if (chromeHandle) {
     chromeHandle.destruct();

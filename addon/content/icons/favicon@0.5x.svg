@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:0.9" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Main circle background -->
+  <circle cx="24" cy="24" r="22" fill="url(#backgroundGradient)" stroke="#2980b9" stroke-width="2"/>
+  
+  <!-- Number "1" for numbering functionality -->
+  <text x="12" y="30" 
+        font-family="Arial, sans-serif" 
+        font-size="24" 
+        font-weight="bold" 
+        fill="white" 
+        text-anchor="middle" 
+        filter="url(#shadow)">1</text>
+  
+  <!-- Document icon for preview functionality -->
+  <g transform="translate(30, 16)">
+    <!-- Document rectangle -->
+    <rect x="0" y="0" width="12" height="16" 
+          fill="white" 
+          stroke="#2980b9" 
+          stroke-width="1" 
+          rx="1"/>
+    
+    <!-- Document lines -->
+    <line x1="2" y1="4" x2="10" y2="4" 
+          stroke="#2980b9" stroke-width="1"/>
+    <line x1="2" y1="6" x2="10" y2="6" 
+          stroke="#2980b9" stroke-width="1"/>
+    <line x1="2" y1="8" x2="9" y2="8" 
+          stroke="#2980b9" stroke-width="1"/>
+    
+    <!-- Eye icon for preview -->
+    <ellipse cx="9" cy="2" rx="2" ry="1" 
+             fill="#2980b9" opacity="0.8"/>
+    <circle cx="9" cy="2" r="1" fill="white"/>
+  </g>
+  
+  <!-- Small accent dots for modern look -->
+  <circle cx="24" cy="8" r="1" fill="white" opacity="0.6"/>
+  <circle cx="24" cy="40" r="1" fill="white" opacity="0.6"/>
+</svg>

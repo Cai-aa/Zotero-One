@@ -1,11 +1,11 @@
 {
   "addons": {
-    "itemnumbering@zotero.plugin": {
+    "zotero-one@zotero.plugin": {
       "updates": [
         {
           "version": "0.1.0",
-          "update_link": "https://github.com/user/zotero-item-numbering/releases/download/v0.1.0/zotero-item-numbering.xpi",
-          "update_hash": "sha512:794c1065091087cc755de6dbdebe649f1013e33a0069dc606420040a974f52d1a7c460193ccbab9fda974dab316bf2cce2c0e3a0be172b55598412277ff0bd1d",
+          "update_link": "https://github.com/user/zotero-one/releases/download/v0.1.0/zotero-one.xpi",
+          "update_hash": "sha512:57c07fe87122b1d32b56061d9a361b835a2a7418eeb2cf8cbd7863d35d2eea60231eebcc0052067f5287ec96248c8807bffdd956f2a5b084164569f639495dbe",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999",

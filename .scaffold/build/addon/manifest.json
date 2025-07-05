@@ -1,25 +1,20 @@
 {
   "manifest_version": 2,
-  "name": "Zotero Item Numbering",
+  "name": "Zotero One",
   "version": "0.1.0",
-  "description": "Display sequential numbers for each item in Zotero library",
-  "homepage_url": "https://github.com/your-username/zotero-item-numbering",
-  "author": "Your Name",
+  "description": "Zotero One - Enhanced productivity plugin with item numbering and quick preview features",
+  "homepage_url": "https://github.com/user/zotero-one#readme",
+  "author": "Zotero Plugin Developer",
   "icons": {
-    "48": "chrome/content/icons/favicon@0.5x.png",
-    "96": "chrome/content/icons/favicon.png"
+    "48": "content/icons/favicon@0.5x.png",
+    "96": "content/icons/favicon.png"
   },
   "applications": {
     "zotero": {
-      "id": "itemnumbering@zotero.plugin",
-      "update_url": "https://github.com/user/zotero-item-numbering/releases/download/release/update.json",
+      "id": "zotero-one@zotero.plugin",
+      "update_url": "https://github.com/user/zotero-one/releases/download/release/update.json",
       "strict_min_version": "6.999",
       "strict_max_version": "7.*"
     }
-  },
-  "background": {
-    "scripts": [
-      "chrome/content/scripts/index.js"
-    ]
   }
 }

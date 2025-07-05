@@ -1,2 +1,2 @@
-pref("extensions.zotero.itemnumbering.enable", true);
-pref("extensions.zotero.itemnumbering.input", "This is input");
+pref("extensions.zotero.zotero-one.enable", true);
+pref("extensions.zotero.zotero-one.input", "This is input");

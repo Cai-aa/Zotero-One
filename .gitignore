@@ -14,3 +14,22 @@ tsconfig.tsbuildinfo
 .scaffold
 build
 logs
+
+# Development files
+*.log
+*.tmp
+.vscode/settings.json
+
+# OS specific
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.idea/
+*.iml
+
+# Temporary files
+icon_design.md
+PDF_PREVIEW_DEBUG.md
+build.bat
