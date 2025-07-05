@@ -4,13 +4,14 @@
 [![GitHub release](https://img.shields.io/github/v/release/user/zotero-one?style=flat-square)](https://github.com/user/zotero-one/releases)
 [![License](https://img.shields.io/github/license/user/zotero-one?style=flat-square)](../LICENSE)
 
-**Zotero One** 是一款增强型 Zotero 生产力插件，集成了文献编号和快速预览功能，让您的学术研究工作流更加高效。
+**Zotero One** 是一款增强型 Zotero 生产力插件，集成了文献编号和快速预览功能，让您的学术研究工作流更加高效。该项目全程使用AI编程工具开发，Vibe Coding的产品。
 
 [English](../README.md) | [简体中文](README-zhCN.md)
 
 ## ✨ 功能特色
 
 ### 📋 文献编号
+
 - **序列编号**：为文献库中的每个条目显示序列号
 - **集合独立编号**：不同集合使用独立的编号系统
 - **自动重新计算**：添加、删除或移动条目时自动更新编号
@@ -18,12 +19,14 @@
 - **开关功能**：通过右键菜单或工具栏按钮轻松启用/禁用编号
 
 ### 👁️ 快速预览
+
 - **PDF 预览**：快速预览 PDF 附件，无需打开文件
 - **性能优化**：仅显示前 10 页，加载速度快
 - **键盘快捷键**：按 ESC 键关闭预览
 - **降级支持**：优雅处理 PDF 不可用的情况
 
 ### 🌐 用户界面
+
 - **集成列**：无缝添加编号列到条目视图中
 - **多语言支持**：支持中文和英文界面
 - **现代设计**：简洁专业的外观，与 Zotero 界面完美融合
@@ -32,6 +35,7 @@
 ## 🚀 安装方法
 
 ### 方法 1：下载 XPI（推荐）
+
 1. 从 [Releases](https://github.com/user/zotero-one/releases) 下载最新的 `zotero-one.xpi` 文件
 2. 在 Zotero 中，转到 `工具` → `插件`
 3. 点击齿轮图标，选择 `从文件安装插件...`
@@ -39,17 +43,20 @@
 5. 重启 Zotero
 
 ### 方法 2：自动更新（即将推出）
+
 自动更新功能将在未来版本中提供。
 
 ## 🔧 使用方法
 
 ### 文献编号
+
 1. 安装后，条目视图中将出现新的"编号"列
 2. 在条目区域右键点击，选择"切换文献编号"来启用/禁用功能
 3. 拖拽列到您喜欢的位置
 4. 点击列标题按编号排序
 
 ### 快速预览
+
 1. 选择任何带有 PDF 附件的条目
 2. 预览功能将自动可用
 3. 使用键盘快捷键进行导航
@@ -57,11 +64,13 @@
 ## 🛠️ 开发
 
 ### 前置要求
+
 - Node.js（v16 或更高版本）
 - npm 或 pnpm
 - Zotero Beta（用于测试）
 
 ### 安装配置
+
 ```bash
 git clone https://github.com/user/zotero-one.git
 cd zotero-one
@@ -69,6 +78,7 @@ npm install
 ```
 
 ### 开发命令
+
 ```bash
 # 启动开发服务器（带热重载）
 npm start
@@ -84,6 +94,7 @@ npm run release
 ```
 
 ### 项目结构
+
 ```
 zotero-one/
 ├── src/                    # TypeScript 源代码

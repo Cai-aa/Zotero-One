@@ -36,7 +36,7 @@ async function onStartup() {
       ItemNumberingFactory.registerToolbarButton();
       ztoolkit.log("Item numbering initialized successfully");
     }, 2000);
-    
+
     // 启动后进行列状态检查和恢复
     ItemNumberingFactory.checkAndRestoreColumn();
   } catch (error) {
@@ -120,7 +120,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
   // 注册集合切换监听器
   if (addon.data.itemNumbering && win.ZoteroPane) {
     const originalSelectCollection = win.ZoteroPane.selectCollection;
-    win.ZoteroPane.selectCollection = function(...args: any[]) {
+    win.ZoteroPane.selectCollection = function (...args: any[]) {
       const result = originalSelectCollection.apply(this, args);
       // 延时执行以确保选择完成
       setTimeout(() => {
@@ -128,7 +128,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
       }, 50);
       return result;
     };
-    
+
     ztoolkit.log("Collection change listener registered");
   }
 
@@ -139,11 +139,11 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
       if (itemsView && itemsView.tree && itemsView.tree.columns) {
         // 监听列顺序变化事件
         const tree = itemsView.tree;
-        
+
         // 重写列移动相关的方法来保存位置
-        if (tree.columns && typeof tree.columns.moveColumn === 'function') {
+        if (tree.columns && typeof tree.columns.moveColumn === "function") {
           const originalMoveColumn = tree.columns.moveColumn.bind(tree.columns);
-          tree.columns.moveColumn = function(...args: any[]) {
+          tree.columns.moveColumn = function (...args: any[]) {
             const result = originalMoveColumn.apply(this, args);
             // 延时保存列位置，确保移动完成
             setTimeout(() => {
@@ -152,14 +152,14 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
             return result;
           };
         }
-        
+
         // 监听拖拽结束事件
-        tree.addEventListener('dragend', () => {
+        tree.addEventListener("dragend", () => {
           setTimeout(() => {
             ItemNumberingFactory.saveColumnPosition();
           }, 100);
         });
-        
+
         ztoolkit.log("Column position save listeners registered");
       }
     }, 2000);
@@ -171,42 +171,52 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
       const itemsView = win.ZoteroPane.itemsView;
       if (itemsView) {
         // 重写排序方法来捕获排序事件
-        if (typeof itemsView.sort === 'function') {
+        if (typeof itemsView.sort === "function") {
           const originalSort = itemsView.sort.bind(itemsView);
-          itemsView.sort = function(column: string, direction?: boolean) {
+          itemsView.sort = function (column: string, direction?: boolean) {
             const result = originalSort.apply(this, arguments);
-            
+
             // 保存排序状态
-            const sortDirection = direction ? 'desc' : 'asc';
+            const sortDirection = direction ? "desc" : "asc";
             ItemNumberingFactory.saveSortState(column, sortDirection);
-            
+
             return result;
           };
         }
-        
+
         // 监听列头点击事件（用于排序）
         if (itemsView.tree) {
-          itemsView.tree.addEventListener('click', (event: Event) => {
+          itemsView.tree.addEventListener("click", (event: Event) => {
             const target = event.target as Element;
-            if (target && target.tagName === 'treecol' && target.getAttribute('data-key') === 'itemNumber') {
+            if (
+              target &&
+              target.tagName === "treecol" &&
+              target.getAttribute("data-key") === "itemNumber"
+            ) {
               // 检测排序方向并保存
               setTimeout(() => {
-                const sortField = itemsView.getSortField ? itemsView.getSortField() : null;
-                const sortDirection = itemsView.getSortDirection ? itemsView.getSortDirection() : null;
-                
-                if (sortField === 'itemNumber') {
-                  ItemNumberingFactory.saveSortState(sortField, sortDirection || 'asc');
+                const sortField = itemsView.getSortField
+                  ? itemsView.getSortField()
+                  : null;
+                const sortDirection = itemsView.getSortDirection
+                  ? itemsView.getSortDirection()
+                  : null;
+
+                if (sortField === "itemNumber") {
+                  ItemNumberingFactory.saveSortState(
+                    sortField,
+                    sortDirection || "asc",
+                  );
                 }
               }, 100);
             }
           });
         }
-        
+
         ztoolkit.log("Sort state save listeners registered");
       }
     }, 2500);
   }
-
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {
@@ -217,14 +227,14 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 function onShutdown(): void {
   ztoolkit.unregisterAll();
   addon.data.dialog?.window?.close();
-  
+
   // Cleanup Quick Preview
   try {
     QuickPreview.cleanup();
   } catch (error) {
     ztoolkit.log("Error during Quick Preview cleanup:", error);
   }
-  
+
   // Remove addon object
   addon.data.alive = false;
   // @ts-ignore - Plugin instance is not typed
@@ -250,7 +260,7 @@ async function onNotify(
   ) {
     BasicExampleFactory.exampleNotifierCallback();
   }
-  
+
   // Handle item changes for numbering
   if (addon.data.itemNumbering) {
     if (type === "item" || type === "collection") {

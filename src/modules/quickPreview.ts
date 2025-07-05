@@ -12,12 +12,12 @@ export class QuickPreview {
    */
   static initialize() {
     if (this.isInitialized) {
-      ztoolkit.log('Quick Preview already initialized');
+      ztoolkit.log("Quick Preview already initialized");
       return;
     }
 
     try {
-      ztoolkit.log('Initializing Quick Preview...');
+      ztoolkit.log("Initializing Quick Preview...");
       // 延迟初始化以确保Zotero完全加载
       setTimeout(() => {
         this.setupKeyboardListeners();
@@ -43,24 +43,30 @@ export class QuickPreview {
       this.handleKeyboardEvent(event as KeyboardEvent);
     };
 
-    ztoolkit.log('Setting up keyboard listeners...');
-    
+    ztoolkit.log("Setting up keyboard listeners...");
+
     // 在主窗口上添加键盘事件监听
     const mainWindow = Zotero.getMainWindow();
-    ztoolkit.log('Main window for event listener:', mainWindow);
+    ztoolkit.log("Main window for event listener:", mainWindow);
     if (mainWindow && mainWindow.document) {
-      mainWindow.document.addEventListener('keydown', this.keyEventListener, true);
+      mainWindow.document.addEventListener(
+        "keydown",
+        this.keyEventListener,
+        true,
+      );
       ztoolkit.log("Keyboard event listeners added to main window");
     } else {
-      ztoolkit.log('Could not add keyboard listener - no main window or document');
+      ztoolkit.log(
+        "Could not add keyboard listener - no main window or document",
+      );
     }
 
     // 在所有Zotero窗口上添加监听器
     const windows = Zotero.getMainWindows();
-    ztoolkit.log('All Zotero windows:', windows);
+    ztoolkit.log("All Zotero windows:", windows);
     windows.forEach((win, index) => {
       if (win && win.document) {
-        win.document.addEventListener('keydown', this.keyEventListener!, true);
+        win.document.addEventListener("keydown", this.keyEventListener!, true);
         ztoolkit.log(`Added keyboard listener to window ${index}`);
       }
     });
@@ -76,14 +82,22 @@ export class QuickPreview {
 
     const mainWindow = Zotero.getMainWindow();
     if (mainWindow && mainWindow.document) {
-      mainWindow.document.removeEventListener('keydown', this.keyEventListener, true);
+      mainWindow.document.removeEventListener(
+        "keydown",
+        this.keyEventListener,
+        true,
+      );
     }
 
     // 从所有窗口移除监听器
     const windows = Zotero.getMainWindows();
-    windows.forEach(win => {
+    windows.forEach((win) => {
       if (win && win.document) {
-        win.document.removeEventListener('keydown', this.keyEventListener!, true);
+        win.document.removeEventListener(
+          "keydown",
+          this.keyEventListener!,
+          true,
+        );
       }
     });
   }
@@ -93,27 +107,28 @@ export class QuickPreview {
    */
   private static handleKeyboardEvent(event: KeyboardEvent) {
     ztoolkit.log(`Key pressed: ${event.key}, code: ${event.code}`);
-    
+
     // 空格键 (keyCode 32, key ' ')
-    if (event.code === 'Space' || event.key === ' ') {
-      ztoolkit.log('Space key detected');
-      
+    if (event.code === "Space" || event.key === " ") {
+      ztoolkit.log("Space key detected");
+
       // 检查是否在输入框或文本区域中
       const target = event.target as HTMLElement;
-      if (target && (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        (target as any).contentEditable === 'true' ||
-        target.closest('input') ||
-        target.closest('textarea') ||
-        target.closest('[contenteditable="true"]')
-      )) {
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          (target as any).contentEditable === "true" ||
+          target.closest("input") ||
+          target.closest("textarea") ||
+          target.closest('[contenteditable="true"]'))
+      ) {
         return; // 在输入框中不触发预览
       }
 
       // 如果预览窗口已打开，关闭它
       if (this.previewOverlay) {
-        ztoolkit.log('Preview is open, closing with spacebar');
+        ztoolkit.log("Preview is open, closing with spacebar");
         event.preventDefault();
         event.stopPropagation();
         this.closePreview();
@@ -122,22 +137,22 @@ export class QuickPreview {
 
       // 如果预览窗口未打开，检查是否有选中的文献来打开预览
       const selectedItem = this.getSelectedItem();
-      ztoolkit.log('Selected item:', selectedItem);
+      ztoolkit.log("Selected item:", selectedItem);
       if (selectedItem) {
-        ztoolkit.log('Preventing default and showing preview');
+        ztoolkit.log("Preventing default and showing preview");
         event.preventDefault();
         event.stopPropagation();
         this.showPreview(selectedItem);
       } else {
-        ztoolkit.log('No item selected for preview');
+        ztoolkit.log("No item selected for preview");
       }
     }
-    
+
     // ESC键关闭预览
-    else if (event.code === 'Escape' || event.key === 'Escape') {
-      ztoolkit.log('ESC key detected');
+    else if (event.code === "Escape" || event.key === "Escape") {
+      ztoolkit.log("ESC key detected");
       if (this.previewOverlay) {
-        ztoolkit.log('Closing preview with ESC');
+        ztoolkit.log("Closing preview with ESC");
         event.preventDefault();
         event.stopPropagation();
         this.closePreview();
@@ -151,23 +166,33 @@ export class QuickPreview {
   private static getSelectedItem(): Zotero.Item | null {
     try {
       const pane = Zotero.getActiveZoteroPane();
-      ztoolkit.log('Active Zotero pane:', pane);
+      ztoolkit.log("Active Zotero pane:", pane);
       if (!pane) {
-        ztoolkit.log('No active Zotero pane found');
+        ztoolkit.log("No active Zotero pane found");
         return null;
       }
 
       const selectedItems = pane.getSelectedItems();
-      ztoolkit.log('Selected items:', selectedItems, 'Length:', selectedItems?.length);
+      ztoolkit.log(
+        "Selected items:",
+        selectedItems,
+        "Length:",
+        selectedItems?.length,
+      );
       if (selectedItems && selectedItems.length > 0) {
         const item = selectedItems[0];
-        ztoolkit.log('First selected item:', item, 'Is regular item:', item.isRegularItem());
+        ztoolkit.log(
+          "First selected item:",
+          item,
+          "Is regular item:",
+          item.isRegularItem(),
+        );
         // 只预览常规文献项目，不预览笔记和附件
         if (item.isRegularItem()) {
           return item;
         }
       }
-      
+
       return null;
     } catch (error) {
       ztoolkit.log("Error getting selected item:", error);
@@ -180,19 +205,18 @@ export class QuickPreview {
    */
   static async showPreview(item: Zotero.Item) {
     try {
-      ztoolkit.log('showPreview called with item:', item);
+      ztoolkit.log("showPreview called with item:", item);
       // 如果已有预览窗口打开，先关闭
       if (this.previewOverlay) {
-        ztoolkit.log('Closing existing preview overlay');
+        ztoolkit.log("Closing existing preview overlay");
         this.closePreview();
       }
 
       this.currentItem = item;
-      
+
       // 创建预览覆盖层
-      ztoolkit.log('Creating preview overlay...');
+      ztoolkit.log("Creating preview overlay...");
       await this.createPreviewOverlay(item);
-      
     } catch (error) {
       ztoolkit.log("Error showing preview:", error);
     }
@@ -211,19 +235,19 @@ export class QuickPreview {
         mainWindow = windows[0];
       }
     }
-    
-    ztoolkit.log('Main window:', mainWindow);
+
+    ztoolkit.log("Main window:", mainWindow);
     if (!mainWindow || !mainWindow.document) {
-      ztoolkit.log('No main window or document found');
+      ztoolkit.log("No main window or document found");
       return;
     }
 
     const doc = mainWindow.document;
-    ztoolkit.log('Document found:', doc, 'Body:', doc.body);
+    ztoolkit.log("Document found:", doc, "Body:", doc.body);
 
     // 创建覆盖层
-    this.previewOverlay = doc.createElement('div');
-    this.previewOverlay.id = 'zotero-quick-preview-overlay';
+    this.previewOverlay = doc.createElement("div");
+    this.previewOverlay.id = "zotero-quick-preview-overlay";
     this.previewOverlay.style.cssText = `
       position: fixed;
       top: 0;
@@ -239,7 +263,7 @@ export class QuickPreview {
     `;
 
     // 创建预览容器
-    const container = doc.createElement('div');
+    const container = doc.createElement("div");
     container.style.cssText = `
       width: 80vw;
       height: 80vh;
@@ -257,7 +281,7 @@ export class QuickPreview {
       -moz-user-select: text;
       -ms-user-select: text;
     `;
-    
+
     // 设置tabIndex以便可以接收键盘事件
     container.tabIndex = 0;
 
@@ -266,7 +290,7 @@ export class QuickPreview {
     container.appendChild(titleBar);
 
     // 创建内容区域 - 只显示文献信息
-    const contentArea = doc.createElement('div');
+    const contentArea = doc.createElement("div");
     contentArea.style.cssText = `
       flex: 1;
       display: flex;
@@ -282,22 +306,22 @@ export class QuickPreview {
     this.previewOverlay.appendChild(container);
 
     // 添加键盘事件处理
-    container.addEventListener('keydown', (event: Event) => {
+    container.addEventListener("keydown", (event: Event) => {
       const keyEvent = event as KeyboardEvent;
-      if (keyEvent.key === 'Escape') {
+      if (keyEvent.key === "Escape") {
         keyEvent.preventDefault();
         keyEvent.stopPropagation();
         this.closePreview();
       }
       // 允许Ctrl+C进行复制操作
-      if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.key === 'c') {
+      if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.key === "c") {
         // 不阻止默认行为，允许正常复制
         keyEvent.stopPropagation();
       }
     });
 
     // 添加点击覆盖层关闭功能
-    this.previewOverlay.addEventListener('click', (event) => {
+    this.previewOverlay.addEventListener("click", (event) => {
       if (event.target === this.previewOverlay) {
         this.closePreview();
       }
@@ -305,23 +329,26 @@ export class QuickPreview {
 
     // 添加到文档
     if (doc.body) {
-      ztoolkit.log('Adding overlay to document body');
+      ztoolkit.log("Adding overlay to document body");
       doc.body.appendChild(this.previewOverlay);
-      ztoolkit.log('Preview overlay added to DOM, overlay element:', this.previewOverlay);
-      
+      ztoolkit.log(
+        "Preview overlay added to DOM, overlay element:",
+        this.previewOverlay,
+      );
+
       // 聚焦到容器以便接收键盘事件
       setTimeout(() => {
         container.focus();
       }, 100);
-      
+
       // 验证元素是否已添加到DOM
-      const addedElement = doc.getElementById('zotero-quick-preview-overlay');
-      ztoolkit.log('Element found in DOM after adding:', addedElement);
+      const addedElement = doc.getElementById("zotero-quick-preview-overlay");
+      ztoolkit.log("Element found in DOM after adding:", addedElement);
     } else {
-      ztoolkit.log('Document body not found, trying documentElement');
+      ztoolkit.log("Document body not found, trying documentElement");
       if (doc.documentElement) {
         doc.documentElement.appendChild(this.previewOverlay);
-        ztoolkit.log('Preview overlay added to documentElement');
+        ztoolkit.log("Preview overlay added to documentElement");
         // 聚焦到容器以便接收键盘事件
         setTimeout(() => {
           container.focus();
@@ -336,7 +363,7 @@ export class QuickPreview {
    * 创建标题栏
    */
   private static createTitleBar(doc: Document, item: Zotero.Item): HTMLElement {
-    const titleBar = doc.createElement('div');
+    const titleBar = doc.createElement("div");
     titleBar.style.cssText = `
       display: flex;
       align-items: center;
@@ -349,13 +376,13 @@ export class QuickPreview {
     `;
 
     // 空的标题区域（保持布局但不显示标题）
-    const titleText = doc.createElement('div');
+    const titleText = doc.createElement("div");
     titleText.style.cssText = `
       flex: 1;
     `;
 
     // 按钮容器
-    const buttonContainer = doc.createElement('div');
+    const buttonContainer = doc.createElement("div");
     buttonContainer.style.cssText = `
       display: flex;
       align-items: center;
@@ -364,7 +391,7 @@ export class QuickPreview {
     `;
 
     // 在Zotero标签页打开按钮
-    const openTabButton = doc.createElement('button');
+    const openTabButton = doc.createElement("button");
     openTabButton.style.cssText = `
       background: #007acc;
       border: none;
@@ -379,32 +406,32 @@ export class QuickPreview {
       justify-content: center;
     `;
     openTabButton.title = getString("open-in-tab") || "Open in Zotero Tab";
-    
+
     // 添加标签页图标
-    const tabIcon = doc.createElement('span');
+    const tabIcon = doc.createElement("span");
     tabIcon.style.cssText = `
       font-size: 12px;
       color: white;
       font-weight: bold;
     `;
-    tabIcon.innerHTML = '🗂';
+    tabIcon.innerHTML = "🗂";
     openTabButton.appendChild(tabIcon);
-    
-    openTabButton.addEventListener('click', (event) => {
+
+    openTabButton.addEventListener("click", (event) => {
       event.stopPropagation();
       this.openItemInTab(item);
     });
-    
-    openTabButton.addEventListener('mouseenter', () => {
-      openTabButton.style.backgroundColor = '#005a9e';
+
+    openTabButton.addEventListener("mouseenter", () => {
+      openTabButton.style.backgroundColor = "#005a9e";
     });
-    
-    openTabButton.addEventListener('mouseleave', () => {
-      openTabButton.style.backgroundColor = '#007acc';
+
+    openTabButton.addEventListener("mouseleave", () => {
+      openTabButton.style.backgroundColor = "#007acc";
     });
 
     // 关闭按钮
-    const closeButton = doc.createElement('button');
+    const closeButton = doc.createElement("button");
     closeButton.style.cssText = `
       background: #ff5f56;
       border: none;
@@ -420,29 +447,29 @@ export class QuickPreview {
       flex-shrink: 0;
     `;
     closeButton.title = getString("close") || "Close";
-    
+
     // 添加关闭图标
-    const closeIcon = doc.createElement('span');
+    const closeIcon = doc.createElement("span");
     closeIcon.style.cssText = `
       font-size: 12px;
       color: white;
       line-height: 1;
       font-weight: bold;
     `;
-    closeIcon.innerHTML = '×';
+    closeIcon.innerHTML = "×";
     closeButton.appendChild(closeIcon);
-    
-    closeButton.addEventListener('click', (event) => {
+
+    closeButton.addEventListener("click", (event) => {
       event.stopPropagation();
       this.closePreview();
     });
-    
-    closeButton.addEventListener('mouseenter', () => {
-      closeButton.style.backgroundColor = '#ff4136';
+
+    closeButton.addEventListener("mouseenter", () => {
+      closeButton.style.backgroundColor = "#ff4136";
     });
-    
-    closeButton.addEventListener('mouseleave', () => {
-      closeButton.style.backgroundColor = '#ff5f56';
+
+    closeButton.addEventListener("mouseleave", () => {
+      closeButton.style.backgroundColor = "#ff5f56";
     });
 
     buttonContainer.appendChild(openTabButton);
@@ -459,44 +486,45 @@ export class QuickPreview {
    */
   private static async openItemInTab(item: Zotero.Item) {
     try {
-      ztoolkit.log('Opening item in Zotero tab:', item.getField('title'));
-      
+      ztoolkit.log("Opening item in Zotero tab:", item.getField("title"));
+
       // 首先尝试查找PDF附件
       const pdfAttachment = await this.findFirstPDFAttachment(item);
-      
+
       if (pdfAttachment) {
-        ztoolkit.log('Found PDF attachment, opening PDF in tab');
+        ztoolkit.log("Found PDF attachment, opening PDF in tab");
         await this.openPDFInTab(pdfAttachment);
       } else {
-        ztoolkit.log('No PDF attachment found, opening item in tab');
+        ztoolkit.log("No PDF attachment found, opening item in tab");
         await this.openItemOnlyInTab(item);
       }
-      
+
       // 关闭预览窗口
       this.closePreview();
-      
     } catch (error) {
-      ztoolkit.log('Error opening item in tab:', error);
+      ztoolkit.log("Error opening item in tab:", error);
     }
   }
 
   /**
    * 查找文献的第一个PDF附件
    */
-  private static async findFirstPDFAttachment(item: Zotero.Item): Promise<Zotero.Item | null> {
+  private static async findFirstPDFAttachment(
+    item: Zotero.Item,
+  ): Promise<Zotero.Item | null> {
     try {
       const attachmentIDs = item.getAttachments();
       ztoolkit.log(`Found ${attachmentIDs.length} total attachments`);
-      
+
       for (const attachmentID of attachmentIDs) {
         const attachment = await Zotero.Items.getAsync(attachmentID);
         if (attachment && attachment.isPDFAttachment()) {
-          ztoolkit.log('✓ Found PDF attachment:', attachment.getField('title'));
+          ztoolkit.log("✓ Found PDF attachment:", attachment.getField("title"));
           return attachment;
         }
       }
-      
-      ztoolkit.log('No PDF attachments found');
+
+      ztoolkit.log("No PDF attachments found");
       return null;
     } catch (error) {
       ztoolkit.log("Error finding PDF attachment:", error);
@@ -510,16 +538,22 @@ export class QuickPreview {
   private static async openPDFInTab(pdfAttachment: Zotero.Item) {
     try {
       // 尝试使用Zotero 7的标签页API打开PDF
-      if (typeof (Zotero as any).Tabs !== 'undefined' && (Zotero as any).Tabs.open) {
+      if (
+        typeof (Zotero as any).Tabs !== "undefined" &&
+        (Zotero as any).Tabs.open
+      ) {
         (Zotero as any).Tabs.open({
-          type: 'reader',
-          item: pdfAttachment
+          type: "reader",
+          item: pdfAttachment,
         });
-        ztoolkit.log('PDF opened in new tab using Zotero.Tabs.open');
-      } else if (typeof (Zotero as any).Reader !== 'undefined' && (Zotero as any).Reader.open) {
+        ztoolkit.log("PDF opened in new tab using Zotero.Tabs.open");
+      } else if (
+        typeof (Zotero as any).Reader !== "undefined" &&
+        (Zotero as any).Reader.open
+      ) {
         // 尝试使用Reader API
         (Zotero as any).Reader.open(pdfAttachment.id);
-        ztoolkit.log('PDF opened using Zotero.Reader.open');
+        ztoolkit.log("PDF opened using Zotero.Reader.open");
       } else {
         // 回退方法：双击附件行为
         const pane = Zotero.getActiveZoteroPane();
@@ -527,19 +561,19 @@ export class QuickPreview {
           // 选中PDF附件
           pane.selectItem(pdfAttachment.id);
           // 尝试模拟双击打开
-          if (typeof pane.viewAttachment === 'function') {
+          if (typeof pane.viewAttachment === "function") {
             pane.viewAttachment([pdfAttachment.id]);
-            ztoolkit.log('PDF opened using viewAttachment');
+            ztoolkit.log("PDF opened using viewAttachment");
           } else {
-            ztoolkit.log('Fallback: PDF attachment selected');
+            ztoolkit.log("Fallback: PDF attachment selected");
           }
         }
       }
     } catch (error) {
-      ztoolkit.log('Error opening PDF in tab:', error);
+      ztoolkit.log("Error opening PDF in tab:", error);
       // 如果PDF打开失败，选中PDF附件
       const pane = Zotero.getActiveZoteroPane();
-      if (pane && typeof pane.selectItem === 'function') {
+      if (pane && typeof pane.selectItem === "function") {
         pane.selectItem(pdfAttachment.id);
       }
     }
@@ -553,20 +587,23 @@ export class QuickPreview {
       const pane = Zotero.getActiveZoteroPane();
       if (pane) {
         // 尝试使用Zotero 7的新API
-        if (typeof (Zotero as any).Tabs !== 'undefined' && (Zotero as any).Tabs.open) {
+        if (
+          typeof (Zotero as any).Tabs !== "undefined" &&
+          (Zotero as any).Tabs.open
+        ) {
           (Zotero as any).Tabs.open({
-            type: 'item',
-            id: item.id
+            type: "item",
+            id: item.id,
           });
-          ztoolkit.log('Item opened in new tab using Zotero.Tabs.open');
-        } else if (typeof pane.selectItem === 'function') {
+          ztoolkit.log("Item opened in new tab using Zotero.Tabs.open");
+        } else if (typeof pane.selectItem === "function") {
           // 回退到传统方法：选中该文献
           pane.selectItem(item.id);
-          ztoolkit.log('Item selected using selectItem');
+          ztoolkit.log("Item selected using selectItem");
         }
       }
     } catch (error) {
-      ztoolkit.log('Error opening item only in tab:', error);
+      ztoolkit.log("Error opening item only in tab:", error);
     }
   }
 
@@ -575,28 +612,31 @@ export class QuickPreview {
    */
   private static openURLInBrowser(url: string) {
     try {
-      ztoolkit.log('Opening URL in browser:', url);
-      
+      ztoolkit.log("Opening URL in browser:", url);
+
       // 使用Zotero的内置方法打开URL
-      if (typeof (Zotero as any).launchURL === 'function') {
+      if (typeof (Zotero as any).launchURL === "function") {
         (Zotero as any).launchURL(url);
-        ztoolkit.log('URL opened using Zotero.launchURL');
-      } else if (typeof Zotero.Utilities !== 'undefined' && Zotero.Utilities.Internal && typeof (Zotero.Utilities.Internal as any).launchURL === 'function') {
+        ztoolkit.log("URL opened using Zotero.launchURL");
+      } else if (
+        typeof Zotero.Utilities !== "undefined" &&
+        Zotero.Utilities.Internal &&
+        typeof (Zotero.Utilities.Internal as any).launchURL === "function"
+      ) {
         (Zotero.Utilities.Internal as any).launchURL(url);
-        ztoolkit.log('URL opened using Zotero.Utilities.Internal.launchURL');
+        ztoolkit.log("URL opened using Zotero.Utilities.Internal.launchURL");
       } else {
         // 尝试使用系统的打开命令
         const mainWindow = Zotero.getMainWindow();
         if (mainWindow && mainWindow.open) {
-          mainWindow.open(url, '_blank');
-          ztoolkit.log('URL opened using window.open');
+          mainWindow.open(url, "_blank");
+          ztoolkit.log("URL opened using window.open");
         } else {
-          ztoolkit.log('No method available to open URL');
+          ztoolkit.log("No method available to open URL");
         }
       }
-      
     } catch (error) {
-      ztoolkit.log('Error opening URL in browser:', error);
+      ztoolkit.log("Error opening URL in browser:", error);
     }
   }
 
@@ -605,29 +645,30 @@ export class QuickPreview {
    */
   private static async copyToClipboard(text: string, button: HTMLElement) {
     try {
-      ztoolkit.log('Copying to clipboard:', text);
-      
+      ztoolkit.log("Copying to clipboard:", text);
+
       let success = false;
-      
+
       // 方法1: 使用Zotero内置的剪贴板服务（最可靠）
       try {
-        if (typeof Components !== 'undefined' && (Components as any).classes) {
-          const clipboardHelper = (Components as any).classes["@mozilla.org/widget/clipboardhelper;1"]
-            .getService((Components as any).interfaces.nsIClipboardHelper);
+        if (typeof Components !== "undefined" && (Components as any).classes) {
+          const clipboardHelper = (Components as any).classes[
+            "@mozilla.org/widget/clipboardhelper;1"
+          ].getService((Components as any).interfaces.nsIClipboardHelper);
           clipboardHelper.copyString(text);
           success = true;
-          ztoolkit.log('Text copied using nsIClipboardHelper');
+          ztoolkit.log("Text copied using nsIClipboardHelper");
         }
       } catch (error) {
-        ztoolkit.log('nsIClipboardHelper failed:', error);
+        ztoolkit.log("nsIClipboardHelper failed:", error);
       }
-      
+
       // 方法2: 使用传统execCommand方法
       if (!success) {
         try {
           const mainWindow = Zotero.getMainWindow();
           if (mainWindow && mainWindow.document && mainWindow.document.body) {
-            const tempInput = mainWindow.document.createElement('input');
+            const tempInput = mainWindow.document.createElement("input");
             tempInput.style.cssText = `
               position: fixed;
               left: -9999px;
@@ -640,34 +681,37 @@ export class QuickPreview {
             tempInput.focus();
             tempInput.select();
             tempInput.setSelectionRange(0, text.length);
-            success = mainWindow.document.execCommand('copy');
+            success = mainWindow.document.execCommand("copy");
             mainWindow.document.body.removeChild(tempInput);
-            ztoolkit.log('Text copied using execCommand, success:', success);
+            ztoolkit.log("Text copied using execCommand, success:", success);
           }
         } catch (error) {
-          ztoolkit.log('execCommand failed:', error);
+          ztoolkit.log("execCommand failed:", error);
         }
       }
-      
+
       // 方法3: 使用现代Clipboard API (作为backup)
       if (!success) {
         try {
           const mainWindow = Zotero.getMainWindow();
-          if (mainWindow && (mainWindow as any).navigator && (mainWindow as any).navigator.clipboard) {
+          if (
+            mainWindow &&
+            (mainWindow as any).navigator &&
+            (mainWindow as any).navigator.clipboard
+          ) {
             await (mainWindow as any).navigator.clipboard.writeText(text);
             success = true;
-            ztoolkit.log('Text copied using navigator.clipboard');
+            ztoolkit.log("Text copied using navigator.clipboard");
           }
         } catch (error) {
-          ztoolkit.log('navigator.clipboard failed:', error);
+          ztoolkit.log("navigator.clipboard failed:", error);
         }
       }
-      
+
       // 提供用户反馈
       this.showCopyFeedback(button, success);
-      
     } catch (error) {
-      ztoolkit.log('Error copying to clipboard:', error);
+      ztoolkit.log("Error copying to clipboard:", error);
       this.showCopyFeedback(button, false);
     }
   }
@@ -678,43 +722,46 @@ export class QuickPreview {
   private static showCopyFeedback(button: HTMLElement, success: boolean) {
     const originalContent = button.innerHTML;
     const originalTitle = button.title;
-    
+
     if (success) {
-      button.innerHTML = '✓';
+      button.innerHTML = "✓";
       button.title = getString("copied") || "Copied!";
-      button.style.backgroundColor = '#d4edda';
-      button.style.borderColor = '#c3e6cb';
-      button.style.color = '#155724';
+      button.style.backgroundColor = "#d4edda";
+      button.style.borderColor = "#c3e6cb";
+      button.style.color = "#155724";
     } else {
-      button.innerHTML = '✗';
+      button.innerHTML = "✗";
       button.title = getString("copy-failed") || "Copy failed";
-      button.style.backgroundColor = '#f8d7da';
-      button.style.borderColor = '#f5c6cb';
-      button.style.color = '#721c24';
+      button.style.backgroundColor = "#f8d7da";
+      button.style.borderColor = "#f5c6cb";
+      button.style.color = "#721c24";
     }
-    
+
     // 2秒后恢复原状
     setTimeout(() => {
       button.innerHTML = originalContent;
       button.title = originalTitle;
-      button.style.backgroundColor = '#f0f0f0';
-      button.style.borderColor = '#ddd';
-      button.style.color = '#666';
+      button.style.backgroundColor = "#f0f0f0";
+      button.style.borderColor = "#ddd";
+      button.style.color = "#666";
     }, 2000);
   }
 
   /**
    * 创建文献信息内容
    */
-  private static createItemInfoContent(doc: Document, item: Zotero.Item): HTMLElement {
+  private static createItemInfoContent(
+    doc: Document,
+    item: Zotero.Item,
+  ): HTMLElement {
     // 创建信息卡片
-    const infoCard = doc.createElement('div');
+    const infoCard = doc.createElement("div");
     infoCard.style.cssText = `
       max-width: 100%;
     `;
 
     // 标题
-    const title = doc.createElement('h1');
+    const title = doc.createElement("h1");
     title.style.cssText = `
       margin: 0 0 16px 0;
       font-size: 20px;
@@ -727,12 +774,12 @@ export class QuickPreview {
       -ms-user-select: text;
       cursor: text;
     `;
-    title.textContent = item.getField('title') || 'Untitled';
+    title.textContent = item.getField("title") || "Untitled";
 
     // 作者
     const creators = item.getCreators();
     if (creators.length > 0) {
-      const authorsDiv = doc.createElement('div');
+      const authorsDiv = doc.createElement("div");
       authorsDiv.style.cssText = `
         margin-bottom: 16px;
         font-size: 14px;
@@ -744,9 +791,13 @@ export class QuickPreview {
         -ms-user-select: text;
         cursor: text;
       `;
-      const authorNames = creators.map(creator => 
-        creator.firstName ? `${creator.firstName} ${creator.lastName}` : creator.lastName
-      ).join(', ');
+      const authorNames = creators
+        .map((creator) =>
+          creator.firstName
+            ? `${creator.firstName} ${creator.lastName}`
+            : creator.lastName,
+        )
+        .join(", ");
       authorsDiv.textContent = authorNames;
       infoCard.appendChild(title);
       infoCard.appendChild(authorsDiv);
@@ -756,16 +807,16 @@ export class QuickPreview {
 
     // 其他字段信息（移除Date、Volume、Pages）
     const fieldsToShow = [
-      { field: 'publicationTitle', label: 'Publication' },
-      { field: 'issue', label: 'Issue' },
-      { field: 'DOI', label: 'DOI' },
-      { field: 'url', label: 'URL' }
+      { field: "publicationTitle", label: "Publication" },
+      { field: "issue", label: "Issue" },
+      { field: "DOI", label: "DOI" },
+      { field: "url", label: "URL" },
     ];
 
     fieldsToShow.forEach(({ field, label }) => {
       const value = item.getField(field);
       if (value) {
-        const fieldDiv = doc.createElement('div');
+        const fieldDiv = doc.createElement("div");
         fieldDiv.style.cssText = `
           margin-bottom: 12px;
           display: flex;
@@ -773,7 +824,7 @@ export class QuickPreview {
           align-items: flex-start;
         `;
 
-        const labelSpan = doc.createElement('span');
+        const labelSpan = doc.createElement("span");
         labelSpan.style.cssText = `
           font-weight: 600;
           color: #555;
@@ -786,9 +837,9 @@ export class QuickPreview {
           -ms-user-select: text;
           cursor: text;
         `;
-        labelSpan.textContent = label + ':';
+        labelSpan.textContent = label + ":";
 
-        const valueSpan = doc.createElement('span');
+        const valueSpan = doc.createElement("span");
         valueSpan.style.cssText = `
           color: #333;
           flex: 1;
@@ -800,18 +851,18 @@ export class QuickPreview {
           -ms-user-select: text;
           cursor: text;
         `;
-        
-        if (field === 'url' || field === 'DOI') {
+
+        if (field === "url" || field === "DOI") {
           // 创建链接和复制按钮的容器
-          const linkContainer = doc.createElement('div');
+          const linkContainer = doc.createElement("div");
           linkContainer.style.cssText = `
             display: flex;
             align-items: center;
             gap: 6px;
           `;
-          
-          const link = doc.createElement('a');
-          const linkURL = field === 'DOI' ? `https://doi.org/${value}` : value;
+
+          const link = doc.createElement("a");
+          const linkURL = field === "DOI" ? `https://doi.org/${value}` : value;
           link.href = linkURL;
           link.style.cssText = `
             color: #007acc;
@@ -824,24 +875,24 @@ export class QuickPreview {
             -ms-user-select: text;
           `;
           link.textContent = value;
-          
+
           // 添加鼠标悬停效果
-          link.addEventListener('mouseenter', () => {
-            link.style.textDecoration = 'underline';
+          link.addEventListener("mouseenter", () => {
+            link.style.textDecoration = "underline";
           });
-          link.addEventListener('mouseleave', () => {
-            link.style.textDecoration = 'none';
+          link.addEventListener("mouseleave", () => {
+            link.style.textDecoration = "none";
           });
-          
+
           // 添加点击事件，在默认浏览器中打开链接
-          link.addEventListener('click', (event) => {
+          link.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             this.openURLInBrowser(linkURL);
           });
-          
+
           // 创建复制按钮
-          const copyButton = doc.createElement('button');
+          const copyButton = doc.createElement("button");
           copyButton.style.cssText = `
             background: #f0f0f0;
             border: 1px solid #ddd;
@@ -857,27 +908,28 @@ export class QuickPreview {
             align-items: center;
             justify-content: center;
           `;
-          copyButton.innerHTML = '📋';
-          copyButton.title = getString("copy-to-clipboard") || "Copy to clipboard";
-          
+          copyButton.innerHTML = "📋";
+          copyButton.title =
+            getString("copy-to-clipboard") || "Copy to clipboard";
+
           // 复制按钮事件
-          copyButton.addEventListener('click', (event) => {
+          copyButton.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             this.copyToClipboard(linkURL, copyButton);
           });
-          
+
           // 复制按钮悬停效果
-          copyButton.addEventListener('mouseenter', () => {
-            copyButton.style.backgroundColor = '#e0e0e0';
-            copyButton.style.borderColor = '#bbb';
+          copyButton.addEventListener("mouseenter", () => {
+            copyButton.style.backgroundColor = "#e0e0e0";
+            copyButton.style.borderColor = "#bbb";
           });
-          
-          copyButton.addEventListener('mouseleave', () => {
-            copyButton.style.backgroundColor = '#f0f0f0';
-            copyButton.style.borderColor = '#ddd';
+
+          copyButton.addEventListener("mouseleave", () => {
+            copyButton.style.backgroundColor = "#f0f0f0";
+            copyButton.style.borderColor = "#ddd";
           });
-          
+
           linkContainer.appendChild(link);
           linkContainer.appendChild(copyButton);
           valueSpan.appendChild(linkContainer);
@@ -892,9 +944,9 @@ export class QuickPreview {
     });
 
     // 摘要
-    const abstractText = item.getField('abstractNote');
+    const abstractText = item.getField("abstractNote");
     if (abstractText) {
-      const abstractTitle = doc.createElement('h3');
+      const abstractTitle = doc.createElement("h3");
       abstractTitle.style.cssText = `
         margin: 20px 0 12px 0;
         font-size: 16px;
@@ -906,9 +958,9 @@ export class QuickPreview {
         -ms-user-select: text;
         cursor: text;
       `;
-      abstractTitle.textContent = 'Abstract';
+      abstractTitle.textContent = "Abstract";
 
-      const abstractDiv = doc.createElement('div');
+      const abstractDiv = doc.createElement("div");
       abstractDiv.style.cssText = `
         line-height: 1.5;
         color: #444;
@@ -926,15 +978,17 @@ export class QuickPreview {
       infoCard.appendChild(abstractDiv);
     }
 
-
     return infoCard;
   }
 
   /**
    * 创建文献信息面板
    */
-  private static createItemInfoPanel(doc: Document, item: Zotero.Item): HTMLElement {
-    const container = doc.createElement('div');
+  private static createItemInfoPanel(
+    doc: Document,
+    item: Zotero.Item,
+  ): HTMLElement {
+    const container = doc.createElement("div");
     container.style.cssText = `
       padding: 20px;
       overflow-y: auto;
@@ -949,16 +1003,16 @@ export class QuickPreview {
 
     const infoContent = this.createItemInfoContent(doc, item);
     container.appendChild(infoContent);
-    
+
     // 添加Ctrl+C复制功能
-    container.addEventListener('keydown', (event: Event) => {
+    container.addEventListener("keydown", (event: Event) => {
       const keyEvent = event as KeyboardEvent;
-      if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.key === 'c') {
+      if ((keyEvent.ctrlKey || keyEvent.metaKey) && keyEvent.key === "c") {
         // 允许默认的复制行为
         keyEvent.stopPropagation();
       }
     });
-    
+
     return container;
   }
 
@@ -1011,13 +1065,13 @@ export class QuickPreview {
    * 测试功能 - 直接调用预览
    */
   static async testPreview() {
-    ztoolkit.log('Testing Quick Preview functionality...');
+    ztoolkit.log("Testing Quick Preview functionality...");
     const selectedItem = this.getSelectedItem();
     if (selectedItem) {
-      ztoolkit.log('Test: Found selected item, showing preview');
+      ztoolkit.log("Test: Found selected item, showing preview");
       await this.showPreview(selectedItem);
     } else {
-      ztoolkit.log('Test: No item selected');
+      ztoolkit.log("Test: No item selected");
       // 创建一个测试弹窗
       this.showTestOverlay();
     }
@@ -1029,13 +1083,13 @@ export class QuickPreview {
   private static showTestOverlay() {
     const mainWindow = Zotero.getMainWindow();
     if (!mainWindow || !mainWindow.document) {
-      ztoolkit.log('Cannot create test overlay - no window');
+      ztoolkit.log("Cannot create test overlay - no window");
       return;
     }
 
     const doc = mainWindow.document;
-    const overlay = doc.createElement('div');
-    overlay.id = 'zotero-test-overlay';
+    const overlay = doc.createElement("div");
+    overlay.id = "zotero-test-overlay";
     overlay.style.cssText = `
       position: fixed;
       top: 0;
@@ -1051,9 +1105,9 @@ export class QuickPreview {
       font-size: 24px;
       cursor: pointer;
     `;
-    overlay.textContent = 'Quick Preview Test - Click to close';
-    
-    overlay.addEventListener('click', () => {
+    overlay.textContent = "Quick Preview Test - Click to close";
+
+    overlay.addEventListener("click", () => {
       if (overlay.parentNode) {
         overlay.parentNode.removeChild(overlay);
       }
@@ -1061,7 +1115,7 @@ export class QuickPreview {
 
     if (doc.body) {
       doc.body.appendChild(overlay);
-      ztoolkit.log('Test overlay created and added to DOM');
+      ztoolkit.log("Test overlay created and added to DOM");
     }
   }
 
@@ -1069,7 +1123,7 @@ export class QuickPreview {
    * 初始化助手 - 重新设置监听器
    */
   static reinitialize() {
-    ztoolkit.log('Reinitializing Quick Preview...');
+    ztoolkit.log("Reinitializing Quick Preview...");
     this.cleanup();
     this.isInitialized = false;
     setTimeout(() => {
@@ -1082,15 +1136,15 @@ export class QuickPreview {
    */
   static enableDebugMode() {
     // 添加到全局Zotero对象以便在控制台中调试
-    if (typeof Zotero !== 'undefined') {
+    if (typeof Zotero !== "undefined") {
       (Zotero as any).QuickPreview = {
         test: () => this.testPreview(),
         show: (item: Zotero.Item) => this.showPreview(item),
         close: () => this.closePreview(),
         isOpen: () => this.isPreviewOpen(),
-        reinit: () => this.reinitialize()
+        reinit: () => this.reinitialize(),
       };
-      ztoolkit.log('QuickPreview debug methods added to Zotero.QuickPreview');
+      ztoolkit.log("QuickPreview debug methods added to Zotero.QuickPreview");
     }
   }
 }

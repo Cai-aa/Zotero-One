@@ -18,7 +18,10 @@ logs
 # Development files
 *.log
 *.tmp
-.vscode/settings.json
+
+# Editor and tool configurations
+.vscode/
+.claude/
 
 # OS specific
 Thumbs.db

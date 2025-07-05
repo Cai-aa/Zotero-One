@@ -599,7 +599,6 @@ export class PromptExampleFactory {
 }
 
 export class HelperExampleFactory {
-
   @example
   static clipboardExample() {
     new ztoolkit.Clipboard()
