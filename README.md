@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/user/zotero-one?style=flat-square)](https://github.com/user/zotero-one/releases)
 [![License](https://img.shields.io/github/license/user/zotero-one?style=flat-square)](LICENSE)
 
-**Zotero One** is an enhanced productivity plugin for Zotero that combines item numbering and quick preview functionality to streamline your research workflow.
+**Zotero One** is an enhanced productivity plugin for Zotero that combines item numbering and quick preview functionality to streamline your research workflow. Fully developed using AI programming tools, vibe coding of the product.
 
 [English](README.md) | [简体中文](doc/README-zhCN.md)
 
