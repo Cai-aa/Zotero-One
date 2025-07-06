@@ -13,17 +13,12 @@
 ### 📋 Item Numbering
 
 - **Sequential numbering**: Display sequential numbers for each item in your library
-- **Collection-specific numbering**: Independent numbering for different collections
-- **Auto-recalculation**: Numbers automatically update when items are added, removed, or moved
-- **Persistent positioning**: Column position and sort preferences are saved
-- **Toggle functionality**: Easily enable/disable numbering with right-click menu or toolbar button
+![Item Numbering Column](image/编号列.png)
 
 ### 👁️ Quick Preview
 
-- **PDF preview**: Fast preview of PDF attachments without opening them
-- **Performance optimized**: Shows first 10 pages for quick loading
-- **Keyboard shortcuts**: Press ESC to close preview
-- **Fallback support**: Graceful handling when PDFs are unavailable
+- **Literature information preview**: After selecting a document, press the space bar to quickly preview the abstract and other information of the document without opening the file or turning your head to look at the information bar on the right
+![Quick Preview Modal](image/模态窗口文献信息预览.png)
 
 ### 🌐 User Interface
 
@@ -57,9 +52,10 @@ Auto-update functionality will be available in future releases.
 
 ### Quick Preview
 
-1. Select any item with a PDF attachment
-2. The preview functionality will be automatically available
-3. Use keyboard shortcuts for navigation
+1. Select any item you want to preview
+2. Press the space bar to quickly preview the document
+3. Press the space bar again or ESC key to close the preview modal
+4. Click the button in the top-right corner of the modal to open the PDF in a Zotero tab for in-depth reading
 
 ## 🛠️ Development
 
@@ -128,9 +124,16 @@ This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE)
 
 ## 🙏 Acknowledgments
 
+- Fully developed using AI programming tools, a product of Vibe Coding. Special thanks to AI technology development that enables someone without programming skills to create their desired software products.
 - Built with [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template)
 - Powered by [Zotero Plugin Toolkit](https://github.com/windingwind/zotero-plugin-toolkit)
 - TypeScript definitions from [Zotero Types](https://github.com/windingwind/zotero-types)
+
+## 🎬 Follow My Channels
+
+- **Bilibili**: https://space.bilibili.com/52846118
+- **RedNote**: https://www.xiaohongshu.com/user/profile/5c6115700000000018009a4f?xsec_token=YBpDdQp4eCnQ3Lbgl3zmttyrXctNCrsPQG_OykwICV4J8=&xsec_source=app_share&xhsshare=CopyLink&appuid=5c6115700000000018009a4f&apptime=1751780059&share_id=fd73f6b440b349df806f843825046a96
+- **YouTube**: https://youtube.com/channel/UCwcXTd0naGLe881Jn0-5m7w?si=MgxSQ9OB-shF7gC_
 
 ## 📞 Support
 

@@ -12,25 +12,14 @@
 
 ### 📋 文献编号
 
-- **序列编号**：为文献库中的每个条目显示序列号
-- **集合独立编号**：不同集合使用独立的编号系统
-- **自动重新计算**：添加、删除或移动条目时自动更新编号
-- **持久化位置**：保存列位置和排序偏好设置
-- **开关功能**：通过右键菜单或工具栏按钮轻松启用/禁用编号
+- **序列编号**：为文献库中的每个条目显示序列号。
+![alt text](../image/编号列.png)
 
 ### 👁️ 快速预览
 
-- **PDF 预览**：快速预览 PDF 附件，无需打开文件
-- **性能优化**：仅显示前 10 页，加载速度快
-- **键盘快捷键**：按 ESC 键关闭预览
-- **降级支持**：优雅处理 PDF 不可用的情况
+- **文献信息预览**：选中文献后按下空格键快速预览文献摘要等信息，无需打开文件或扭头去看右边的信息栏。
+![alt text](../image/模态窗口文献信息预览.png)
 
-### 🌐 用户界面
-
-- **集成列**：无缝添加编号列到条目视图中
-- **多语言支持**：支持中文和英文界面
-- **现代设计**：简洁专业的外观，与 Zotero 界面完美融合
-- **可自定义**：可调整列位置和排序选项
 
 ## 🚀 安装方法
 
@@ -42,9 +31,6 @@
 4. 选择下载的 XPI 文件
 5. 重启 Zotero
 
-### 方法 2：自动更新（即将推出）
-
-自动更新功能将在未来版本中提供。
 
 ## 🔧 使用方法
 
@@ -57,9 +43,9 @@
 
 ### 快速预览
 
-1. 选择任何带有 PDF 附件的条目
-2. 预览功能将自动可用
-3. 使用键盘快捷键进行导航
+1. 选择任何想要预览的文献
+2. 按下键盘上的空格键进行快速预览文献，如果想要关闭预览，再次按下键盘上空格键或者ESC键即可退出模态窗口。
+3. 如果想要在Zotero的标签页进行深入阅读，可按模态窗口右上角的按钮，既可在Zotero的标签页打开文献的PDF，进行深入的阅读。
 
 ## 🛠️ 开发
 
@@ -127,10 +113,15 @@ zotero-one/
 本项目采用 AGPL-3.0 许可证 - 详见 [LICENSE](../LICENSE) 文件。
 
 ## 🙏 致谢
-
+- 全程使用AI编程工具开发，Vibe Coding的产品。非常感谢AI技术的发展，能让我一个不懂编程技术的人员做出自己想要的软件产品。
 - 基于 [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template) 构建
 - 由 [Zotero Plugin Toolkit](https://github.com/windingwind/zotero-plugin-toolkit) 驱动
 - TypeScript 定义来自 [Zotero Types](https://github.com/windingwind/zotero-types)
+
+## 🎬 欢迎关注我的频道
+B站: https://space.bilibili.com/52846118
+小红书：https://www.xiaohongshu.com/user/profile/5c6115700000000018009a4f?xsec_token=YBpDdQp4eCnQ3Lbgl3zmttyrXctNCrsPQG_OykwICV4J8=&xsec_source=app_share&xhsshare=CopyLink&appuid=5c6115700000000018009a4f&apptime=1751780059&share_id=fd73f6b440b349df806f843825046a96
+Youtube：https://youtube.com/channel/UCwcXTd0naGLe881Jn0-5m7w?si=MgxSQ9OB-shF7gC_
 
 ## 📞 支持
 
