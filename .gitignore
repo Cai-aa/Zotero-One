@@ -39,3 +39,6 @@ build.bat
 
 # YoYo AI version control directory
 .yoyo/
+
+# Claude Code project instructions
+CLAUDE.md
