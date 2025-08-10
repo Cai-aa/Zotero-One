@@ -121,9 +121,32 @@ export class QuickPreview {
           (target as any).contentEditable === "true" ||
           target.closest("input") ||
           target.closest("textarea") ||
-          target.closest('[contenteditable="true"]'))
+          target.closest('[contenteditable="true"]') ||
+          // 添加对Zotero特定搜索框的检查
+          target.id?.includes("search") ||
+          target.className?.includes("search") ||
+          target.closest('[id*="search"]') ||
+          target.closest('[class*="search"]') ||
+          target.closest('[role="searchbox"]') ||
+          target.closest('[type="search"]') ||
+          // 检查是否在Zotero的快速搜索框中
+          target.closest("#zotero-tb-search") ||
+          target.closest(".zotero-tb-search") ||
+          target.closest('[placeholder*="search" i]') ||
+          target.closest('[placeholder*="搜索" i]') ||
+          // 检查焦点是否在可编辑元素中
+          target.hasAttribute?.("contenteditable") ||
+          // 检查是否在文本输入相关的元素中
+          (target as HTMLInputElement).type === "text" ||
+          (target as HTMLInputElement).type === "search" ||
+          (target as HTMLInputElement).type === "email" ||
+          (target as HTMLInputElement).type === "url" ||
+          (target as HTMLInputElement).type === "password")
       ) {
-        return; // 在输入框中不触发预览
+        ztoolkit.log(
+          "Event target is in input field, search box or editable area, ignoring space key",
+        );
+        return; // 在输入框、搜索框或可编辑区域中不触发预览
       }
 
       // 如果预览窗口已打开，关闭它

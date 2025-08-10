@@ -13,12 +13,12 @@
 ### 📋 Item Numbering
 
 - **Sequential numbering**: Display sequential numbers for each item in your library
-![Item Numbering Column](image/编号列.png)
+  ![Item Numbering Column](image/编号列.png)
 
 ### 👁️ Quick Preview
 
 - **Literature information preview**: After selecting a document, press the space bar to quickly preview the abstract and other information of the document without opening the file or turning your head to look at the information bar on the right
-![Quick Preview Modal](image/模态窗口文献信息预览.png)
+  ![Quick Preview Modal](image/模态窗口文献信息预览.png)
 
 ### 🌐 User Interface
 

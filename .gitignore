@@ -36,3 +36,6 @@ Thumbs.db
 icon_design.md
 PDF_PREVIEW_DEBUG.md
 build.bat
+
+# YoYo AI version control directory
+.yoyo/

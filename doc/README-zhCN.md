@@ -13,13 +13,12 @@
 ### 📋 文献编号
 
 - **序列编号**：为文献库中的每个条目显示序列号。
-![alt text](../image/编号列.png)
+  ![alt text](../image/编号列.png)
 
 ### 👁️ 快速预览
 
 - **文献信息预览**：选中文献后按下空格键快速预览文献摘要等信息，无需打开文件或扭头去看右边的信息栏。
-![alt text](../image/模态窗口文献信息预览.png)
-
+  ![alt text](../image/模态窗口文献信息预览.png)
 
 ## 🚀 安装方法
 
@@ -30,7 +29,6 @@
 3. 点击齿轮图标，选择 `从文件安装插件...`
 4. 选择下载的 XPI 文件
 5. 重启 Zotero
-
 
 ## 🔧 使用方法
 
@@ -113,12 +111,14 @@ zotero-one/
 本项目采用 AGPL-3.0 许可证 - 详见 [LICENSE](../LICENSE) 文件。
 
 ## 🙏 致谢
+
 - 全程使用AI编程工具开发，Vibe Coding的产品。非常感谢AI技术的发展，能让我一个不懂编程技术的人员做出自己想要的软件产品。
 - 基于 [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template) 构建
 - 由 [Zotero Plugin Toolkit](https://github.com/windingwind/zotero-plugin-toolkit) 驱动
 - TypeScript 定义来自 [Zotero Types](https://github.com/windingwind/zotero-types)
 
 ## 🎬 欢迎关注我的频道
+
 B站: https://space.bilibili.com/52846118
 小红书：https://www.xiaohongshu.com/user/profile/5c6115700000000018009a4f?xsec_token=YBpDdQp4eCnQ3Lbgl3zmttyrXctNCrsPQG_OykwICV4J8=&xsec_source=app_share&xhsshare=CopyLink&appuid=5c6115700000000018009a4f&apptime=1751780059&share_id=fd73f6b440b349df806f843825046a96
 Youtube：https://youtube.com/channel/UCwcXTd0naGLe881Jn0-5m7w?si=MgxSQ9OB-shF7gC_

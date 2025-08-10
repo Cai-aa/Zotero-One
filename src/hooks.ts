@@ -173,12 +173,15 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
         // 重写排序方法来捕获排序事件
         if (typeof itemsView.sort === "function") {
           const originalSort = itemsView.sort.bind(itemsView);
-          itemsView.sort = function (column: string, direction?: boolean) {
-            const result = originalSort.apply(this, arguments);
+          itemsView.sort = function (...args: Parameters<typeof originalSort>) {
+            const result = originalSort.apply(this, args);
 
             // 保存排序状态
+            const [column, direction] = args;
             const sortDirection = direction ? "desc" : "asc";
-            ItemNumberingFactory.saveSortState(column, sortDirection);
+            if (typeof column === "string") {
+              ItemNumberingFactory.saveSortState(column, sortDirection);
+            }
 
             return result;
           };
