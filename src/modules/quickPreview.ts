@@ -6,6 +6,10 @@ export class QuickPreview {
   private static previewOverlay: HTMLElement | null = null;
   private static currentItem: Zotero.Item | null = null;
   private static keyEventListener: ((event: Event) => void) | null = null;
+  private static isEditMode = false;
+  private static editedData: { [key: string]: any } = {};
+  private static tagsExpanded = false;
+  private static isPDFMode = false;
 
   /**
    * 初始化快速预览功能
@@ -288,10 +292,10 @@ export class QuickPreview {
     // 创建预览容器
     const container = doc.createElement("div");
     container.style.cssText = `
-      width: 80vw;
-      height: 80vh;
-      max-width: 800px;
-      max-height: 600px;
+      width: 85vw;
+      height: 85vh;
+      max-width: 1000px;
+      max-height: 750px;
       background: white;
       border-radius: 12px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -314,6 +318,7 @@ export class QuickPreview {
 
     // 创建内容区域 - 只显示文献信息
     const contentArea = doc.createElement("div");
+    contentArea.className = "content-area";
     contentArea.style.cssText = `
       flex: 1;
       display: flex;
@@ -413,6 +418,146 @@ export class QuickPreview {
       flex-shrink: 0;
     `;
 
+    // PDF预览按钮 - 只有当PDF附件存在时才显示
+    let pdfButton: HTMLElement | null = null;
+    const hasPDFAttachment = this.checkForPDFAttachment(item);
+
+    if (hasPDFAttachment) {
+      pdfButton = doc.createElement("button");
+      pdfButton.className = "pdf-button";
+      pdfButton.style.cssText = `
+        background: #ff9800;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 4px;
+      `;
+      pdfButton.title = this.isPDFMode ? "Show Info" : "Show PDF";
+
+      // 添加PDF图标
+      const pdfIcon = doc.createElement("span");
+      pdfIcon.style.cssText = `
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      `;
+      pdfIcon.innerHTML = this.isPDFMode ? "📄" : "📕";
+      pdfButton.appendChild(pdfIcon);
+
+      pdfButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.togglePDFMode(item);
+      });
+
+      pdfButton.addEventListener("mouseenter", () => {
+        pdfButton!.style.backgroundColor = "#f57c00";
+      });
+
+      pdfButton.addEventListener("mouseleave", () => {
+        pdfButton!.style.backgroundColor = "#ff9800";
+      });
+    }
+
+    // URL按钮 - 只有当URL存在时才显示
+    const urlField = item.getField("url");
+    let urlButton: HTMLElement | null = null;
+
+    if (urlField) {
+      urlButton = doc.createElement("button");
+      urlButton.style.cssText = `
+        background: #2196f3;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 4px;
+      `;
+      urlButton.title = "Open URL";
+
+      // 添加URL图标
+      const urlIcon = doc.createElement("span");
+      urlIcon.style.cssText = `
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      `;
+      urlIcon.innerHTML = "🔗";
+      urlButton.appendChild(urlIcon);
+
+      urlButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.openURLInBrowser(urlField);
+      });
+
+      urlButton.addEventListener("mouseenter", () => {
+        urlButton!.style.backgroundColor = "#1976d2";
+      });
+
+      urlButton.addEventListener("mouseleave", () => {
+        urlButton!.style.backgroundColor = "#2196f3";
+      });
+    }
+
+    // 编辑按钮
+    const editButton = doc.createElement("button");
+    editButton.className = "edit-button";
+    editButton.style.cssText = `
+      background: #4caf50;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+    editButton.title = "Edit Item";
+
+    // 添加编辑图标
+    const editIcon = doc.createElement("span");
+    editIcon.style.cssText = `
+      font-size: 12px;
+      color: white;
+      font-weight: bold;
+    `;
+    editIcon.innerHTML = "✎";
+    editButton.appendChild(editIcon);
+
+    editButton.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      if (this.isEditMode) {
+        // 如果在编辑模式，保存内容
+        await this.saveEditedContent(item);
+      } else {
+        // 如果不在编辑模式，进入编辑模式
+        this.toggleEditMode(item);
+      }
+    });
+
+    editButton.addEventListener("mouseenter", () => {
+      editButton.style.backgroundColor = "#45a049";
+    });
+
+    editButton.addEventListener("mouseleave", () => {
+      editButton.style.backgroundColor = "#4caf50";
+    });
+
     // 在Zotero标签页打开按钮
     const openTabButton = doc.createElement("button");
     openTabButton.style.cssText = `
@@ -428,7 +573,7 @@ export class QuickPreview {
       align-items: center;
       justify-content: center;
     `;
-    openTabButton.title = getString("open-in-tab") || "Open in Zotero Tab";
+    openTabButton.title = "Open in Zotero Tab";
 
     // 添加标签页图标
     const tabIcon = doc.createElement("span");
@@ -469,7 +614,7 @@ export class QuickPreview {
       justify-content: center;
       flex-shrink: 0;
     `;
-    closeButton.title = getString("close") || "Close";
+    closeButton.title = "Close";
 
     // 添加关闭图标
     const closeIcon = doc.createElement("span");
@@ -495,6 +640,15 @@ export class QuickPreview {
       closeButton.style.backgroundColor = "#ff5f56";
     });
 
+    // 添加PDF按钮（如果存在）
+    if (pdfButton) {
+      buttonContainer.appendChild(pdfButton);
+    }
+    // 添加URL按钮（如果存在）
+    if (urlButton) {
+      buttonContainer.appendChild(urlButton);
+    }
+    buttonContainer.appendChild(editButton);
     buttonContainer.appendChild(openTabButton);
     buttonContainer.appendChild(closeButton);
 
@@ -748,13 +902,13 @@ export class QuickPreview {
 
     if (success) {
       button.innerHTML = "✓";
-      button.title = getString("copied") || "Copied!";
+      button.title = "Copied!";
       button.style.backgroundColor = "#d4edda";
       button.style.borderColor = "#c3e6cb";
       button.style.color = "#155724";
     } else {
       button.innerHTML = "✗";
-      button.title = getString("copy-failed") || "Copy failed";
+      button.title = "Copy failed";
       button.style.backgroundColor = "#f8d7da";
       button.style.borderColor = "#f5c6cb";
       button.style.color = "#721c24";
@@ -784,20 +938,52 @@ export class QuickPreview {
     `;
 
     // 标题
-    const title = doc.createElement("h1");
-    title.style.cssText = `
-      margin: 0 0 16px 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: #333;
-      line-height: 1.4;
-      user-select: text;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      cursor: text;
-    `;
-    title.textContent = item.getField("title") || "Untitled";
+    if (this.isEditMode) {
+      const titleInput = doc.createElement("input");
+      titleInput.type = "text";
+      titleInput.value = this.editedData.title || "";
+      titleInput.style.cssText = `
+        margin: 0 0 16px 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        line-height: 1.4;
+        width: 100%;
+        border: 2px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+        background: #f9f9f9;
+        transition: border-color 0.2s;
+      `;
+      titleInput.addEventListener("focus", () => {
+        titleInput.style.borderColor = "#2196f3";
+        titleInput.style.backgroundColor = "white";
+      });
+      titleInput.addEventListener("blur", () => {
+        titleInput.style.borderColor = "#e0e0e0";
+        titleInput.style.backgroundColor = "#f9f9f9";
+      });
+      titleInput.addEventListener("input", (e) => {
+        this.editedData.title = (e.target as HTMLInputElement).value;
+      });
+      infoCard.appendChild(titleInput);
+    } else {
+      const title = doc.createElement("h1");
+      title.style.cssText = `
+        margin: 0 0 16px 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        line-height: 1.4;
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        cursor: text;
+      `;
+      title.textContent = item.getField("title") || "Untitled";
+      infoCard.appendChild(title);
+    }
 
     // 作者
     const creators = item.getCreators();
@@ -822,153 +1008,14 @@ export class QuickPreview {
         )
         .join(", ");
       authorsDiv.textContent = authorNames;
-      infoCard.appendChild(title);
       infoCard.appendChild(authorsDiv);
-    } else {
-      infoCard.appendChild(title);
     }
 
-    // 其他字段信息（移除Date、Volume、Pages）
-    const fieldsToShow = [
-      { field: "publicationTitle", label: "Publication" },
-      { field: "issue", label: "Issue" },
-      { field: "DOI", label: "DOI" },
-      { field: "url", label: "URL" },
-    ];
-
-    fieldsToShow.forEach(({ field, label }) => {
-      const value = item.getField(field);
-      if (value) {
-        const fieldDiv = doc.createElement("div");
-        fieldDiv.style.cssText = `
-          margin-bottom: 12px;
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        `;
-
-        const labelSpan = doc.createElement("span");
-        labelSpan.style.cssText = `
-          font-weight: 600;
-          color: #555;
-          min-width: 80px;
-          flex-shrink: 0;
-          font-size: 13px;
-          user-select: text;
-          -webkit-user-select: text;
-          -moz-user-select: text;
-          -ms-user-select: text;
-          cursor: text;
-        `;
-        labelSpan.textContent = label + ":";
-
-        const valueSpan = doc.createElement("span");
-        valueSpan.style.cssText = `
-          color: #333;
-          flex: 1;
-          line-height: 1.4;
-          font-size: 13px;
-          user-select: text;
-          -webkit-user-select: text;
-          -moz-user-select: text;
-          -ms-user-select: text;
-          cursor: text;
-        `;
-
-        if (field === "url" || field === "DOI") {
-          // 创建链接和复制按钮的容器
-          const linkContainer = doc.createElement("div");
-          linkContainer.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          `;
-
-          const link = doc.createElement("a");
-          const linkURL = field === "DOI" ? `https://doi.org/${value}` : value;
-          link.href = linkURL;
-          link.style.cssText = `
-            color: #007acc;
-            text-decoration: none;
-            cursor: pointer;
-            flex: 1;
-            user-select: text;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-          `;
-          link.textContent = value;
-
-          // 添加鼠标悬停效果
-          link.addEventListener("mouseenter", () => {
-            link.style.textDecoration = "underline";
-          });
-          link.addEventListener("mouseleave", () => {
-            link.style.textDecoration = "none";
-          });
-
-          // 添加点击事件，在默认浏览器中打开链接
-          link.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            this.openURLInBrowser(linkURL);
-          });
-
-          // 创建复制按钮
-          const copyButton = doc.createElement("button");
-          copyButton.style.cssText = `
-            background: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            padding: 2px 6px;
-            cursor: pointer;
-            font-size: 11px;
-            color: #666;
-            transition: all 0.2s;
-            min-width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          `;
-          copyButton.innerHTML = "📋";
-          copyButton.title =
-            getString("copy-to-clipboard") || "Copy to clipboard";
-
-          // 复制按钮事件
-          copyButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            this.copyToClipboard(linkURL, copyButton);
-          });
-
-          // 复制按钮悬停效果
-          copyButton.addEventListener("mouseenter", () => {
-            copyButton.style.backgroundColor = "#e0e0e0";
-            copyButton.style.borderColor = "#bbb";
-          });
-
-          copyButton.addEventListener("mouseleave", () => {
-            copyButton.style.backgroundColor = "#f0f0f0";
-            copyButton.style.borderColor = "#ddd";
-          });
-
-          linkContainer.appendChild(link);
-          linkContainer.appendChild(copyButton);
-          valueSpan.appendChild(linkContainer);
-        } else {
-          valueSpan.textContent = value;
-        }
-
-        fieldDiv.appendChild(labelSpan);
-        fieldDiv.appendChild(valueSpan);
-        infoCard.appendChild(fieldDiv);
-      }
-    });
-
     // 摘要
-    const abstractText = item.getField("abstractNote");
-    if (abstractText) {
+    const abstractText = this.isEditMode
+      ? this.editedData.abstractNote
+      : item.getField("abstractNote");
+    if (abstractText || this.isEditMode) {
       const abstractTitle = doc.createElement("h3");
       abstractTitle.style.cssText = `
         margin: 20px 0 12px 0;
@@ -983,25 +1030,315 @@ export class QuickPreview {
       `;
       abstractTitle.textContent = "Abstract";
 
-      const abstractDiv = doc.createElement("div");
-      abstractDiv.style.cssText = `
-        line-height: 1.5;
-        color: #444;
-        text-align: justify;
-        font-size: 13px;
+      if (this.isEditMode) {
+        // 编辑模式 - 文本区域
+        const abstractTextarea = doc.createElement("textarea");
+        abstractTextarea.value = abstractText || "";
+        abstractTextarea.style.cssText = `
+          width: 100%;
+          min-height: 120px;
+          line-height: 1.5;
+          color: #444;
+          font-size: 15px;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          padding: 8px;
+          background: #f9f9f9;
+          resize: vertical;
+          font-family: inherit;
+          transition: border-color 0.2s;
+        `;
+
+        abstractTextarea.addEventListener("focus", () => {
+          abstractTextarea.style.borderColor = "#2196f3";
+          abstractTextarea.style.backgroundColor = "white";
+        });
+
+        abstractTextarea.addEventListener("blur", () => {
+          abstractTextarea.style.borderColor = "#e0e0e0";
+          abstractTextarea.style.backgroundColor = "#f9f9f9";
+        });
+
+        abstractTextarea.addEventListener("input", (e) => {
+          this.editedData.abstractNote = (
+            e.target as HTMLTextAreaElement
+          ).value;
+        });
+
+        infoCard.appendChild(abstractTitle);
+        infoCard.appendChild(abstractTextarea);
+      } else {
+        // 查看模式 - 显示文本
+        const abstractDiv = doc.createElement("div");
+        abstractDiv.style.cssText = `
+          line-height: 1.5;
+          color: #444;
+          text-align: justify;
+          font-size: 15px;
+          user-select: text;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          cursor: text;
+        `;
+        abstractDiv.textContent = abstractText;
+
+        infoCard.appendChild(abstractTitle);
+        infoCard.appendChild(abstractDiv);
+      }
+    }
+
+    // 标签信息 - 放在摘要后面
+    const tags = this.isEditMode
+      ? this.editedData.tags
+      : item.getTags().map((tagData) => tagData.tag || tagData);
+    if ((tags && tags.length > 0) || this.isEditMode) {
+      const tagsTitle = doc.createElement("h3");
+      tagsTitle.style.cssText = `
+        margin: 20px 0 12px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
         user-select: text;
         -webkit-user-select: text;
         -moz-user-select: text;
         -ms-user-select: text;
         cursor: text;
       `;
-      abstractDiv.textContent = abstractText;
+      tagsTitle.textContent = "Tags";
 
-      infoCard.appendChild(abstractTitle);
-      infoCard.appendChild(abstractDiv);
+      if (this.isEditMode) {
+        // 编辑模式 - 可编辑标签
+        const tagsInputContainer = doc.createElement("div");
+        tagsInputContainer.style.cssText = `
+          margin-bottom: 16px;
+        `;
+
+        const tagsInput = doc.createElement("input");
+        tagsInput.type = "text";
+        tagsInput.placeholder = "Enter tags separated by commas";
+        tagsInput.value = (tags || []).join(", ");
+        tagsInput.style.cssText = `
+          width: 100%;
+          border: 1px solid #e0e0e0;
+          border-radius: 4px;
+          padding: 8px;
+          font-size: 13px;
+          background: #f9f9f9;
+          transition: border-color 0.2s;
+        `;
+
+        tagsInput.addEventListener("focus", () => {
+          tagsInput.style.borderColor = "#2196f3";
+          tagsInput.style.backgroundColor = "white";
+        });
+
+        tagsInput.addEventListener("blur", () => {
+          tagsInput.style.borderColor = "#e0e0e0";
+          tagsInput.style.backgroundColor = "#f9f9f9";
+        });
+
+        // 显示当前标签预览
+        const tagsPreview = doc.createElement("div");
+        tagsPreview.style.cssText = `
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 8px;
+          min-height: 24px;
+        `;
+
+        const updateTagsPreview = () => {
+          tagsPreview.innerHTML = "";
+          const currentTags = this.editedData.tags || [];
+          currentTags.forEach((tag: string) => {
+            if (tag.trim()) {
+              const tagElement = doc.createElement("span");
+              tagElement.style.cssText = `
+                background: #e8f5e8;
+                color: #2e7d2e;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 11px;
+                font-weight: 500;
+                border: 1px solid #c8e6c8;
+              `;
+              tagElement.textContent = tag.trim();
+              tagsPreview.appendChild(tagElement);
+            }
+          });
+        };
+
+        tagsInput.addEventListener("input", (e) => {
+          const inputValue = (e.target as HTMLInputElement).value;
+          this.editedData.tags = inputValue
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
+          updateTagsPreview();
+        });
+
+        updateTagsPreview(); // 初始预览
+
+        tagsInputContainer.appendChild(tagsInput);
+        tagsInputContainer.appendChild(tagsPreview);
+
+        infoCard.appendChild(tagsTitle);
+        infoCard.appendChild(tagsInputContainer);
+      } else {
+        // 查看模式 - 显示标签（带展开/收起功能）
+        const tagsContainer = this.createTagsContainer(doc, tags);
+        infoCard.appendChild(tagsTitle);
+        infoCard.appendChild(tagsContainer);
+      }
     }
 
     return infoCard;
+  }
+
+  /**
+   * 创建标签容器（带展开/收起功能）
+   */
+  private static createTagsContainer(
+    doc: Document,
+    tags: string[],
+  ): HTMLElement {
+    const tagsMainContainer = doc.createElement("div");
+    tagsMainContainer.style.cssText = `
+      margin-bottom: 32px;
+    `;
+
+    // 计算应该显示的标签数量（第一排）
+    const maxTagsInFirstRow = 6; // 假设第一排最多显示6个标签
+    const visibleTags = this.tagsExpanded
+      ? tags
+      : tags.slice(0, maxTagsInFirstRow);
+    const hasMoreTags = tags.length > maxTagsInFirstRow;
+
+    // 标签容器
+    const tagsContainer = doc.createElement("div");
+    tagsContainer.style.cssText = `
+      display: flex;
+      flex-wrap: ${this.tagsExpanded ? "wrap" : "nowrap"};
+      gap: 8px;
+      align-items: center;
+      overflow: ${this.tagsExpanded ? "visible" : "hidden"};
+      margin-bottom: 8px;
+    `;
+
+    // 添加标签
+    visibleTags.forEach((tag: string) => {
+      const tagElement = doc.createElement("span");
+      tagElement.style.cssText = `
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid #bbdefb;
+        white-space: nowrap;
+        flex-shrink: 0;
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        cursor: text;
+      `;
+      tagElement.textContent = tag;
+      tagsContainer.appendChild(tagElement);
+    });
+
+    // 添加显示更多/更少按钮
+    if (hasMoreTags) {
+      const toggleButton = doc.createElement("button");
+      toggleButton.style.cssText = `
+        background: #f5f5f5;
+        color: #666;
+        border: 1px solid #ddd;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s;
+      `;
+
+      const updateButtonText = () => {
+        if (this.tagsExpanded) {
+          toggleButton.textContent = "显示更少";
+          toggleButton.title = "Show fewer tags";
+          tagsContainer.style.flexWrap = "wrap";
+          tagsContainer.style.overflow = "visible";
+        } else {
+          const hiddenCount = tags.length - maxTagsInFirstRow;
+          toggleButton.textContent = `显示更多 (${hiddenCount})`;
+          toggleButton.title = `Show ${hiddenCount} more tags`;
+          tagsContainer.style.flexWrap = "nowrap";
+          tagsContainer.style.overflow = "hidden";
+        }
+      };
+
+      updateButtonText();
+
+      toggleButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.tagsExpanded = !this.tagsExpanded;
+
+        // 清除现有标签
+        tagsContainer.innerHTML = "";
+
+        // 重新渲染标签
+        const newVisibleTags = this.tagsExpanded
+          ? tags
+          : tags.slice(0, maxTagsInFirstRow);
+        newVisibleTags.forEach((tag: string) => {
+          const tagElement = doc.createElement("span");
+          tagElement.style.cssText = `
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #bbdefb;
+            white-space: nowrap;
+            flex-shrink: 0;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            cursor: text;
+          `;
+          tagElement.textContent = tag;
+          tagsContainer.appendChild(tagElement);
+        });
+
+        // 更新按钮文本和容器样式
+        updateButtonText();
+
+        // 重新添加按钮
+        tagsContainer.appendChild(toggleButton);
+      });
+
+      toggleButton.addEventListener("mouseenter", () => {
+        toggleButton.style.backgroundColor = "#e8e8e8";
+        toggleButton.style.borderColor = "#bbb";
+      });
+
+      toggleButton.addEventListener("mouseleave", () => {
+        toggleButton.style.backgroundColor = "#f5f5f5";
+        toggleButton.style.borderColor = "#ddd";
+      });
+
+      tagsContainer.appendChild(toggleButton);
+    }
+
+    tagsMainContainer.appendChild(tagsContainer);
+    return tagsMainContainer;
   }
 
   /**
@@ -1013,7 +1350,7 @@ export class QuickPreview {
   ): HTMLElement {
     const container = doc.createElement("div");
     container.style.cssText = `
-      padding: 20px;
+      padding: 20px 20px 40px 20px;
       overflow-y: auto;
       background: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -1024,8 +1361,14 @@ export class QuickPreview {
       -ms-user-select: text;
     `;
 
-    const infoContent = this.createItemInfoContent(doc, item);
-    container.appendChild(infoContent);
+    // 根据模式显示不同内容
+    if (this.isPDFMode) {
+      const pdfContent = this.createPDFContent(doc, item);
+      container.appendChild(pdfContent);
+    } else {
+      const infoContent = this.createItemInfoContent(doc, item);
+      container.appendChild(infoContent);
+    }
 
     // 添加Ctrl+C复制功能
     container.addEventListener("keydown", (event: Event) => {
@@ -1040,6 +1383,738 @@ export class QuickPreview {
   }
 
   /**
+   * 创建PDF内容显示
+   */
+  private static createPDFContent(
+    doc: Document,
+    item: Zotero.Item,
+  ): HTMLElement {
+    const pdfContainer = doc.createElement("div");
+    pdfContainer.style.cssText = `
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    `;
+
+    try {
+      // 查找第一个PDF附件
+      const pdfAttachment = this.getFirstPDFAttachment(item);
+
+      if (pdfAttachment) {
+        // 创建工具栏
+        const toolbar = this.createPDFToolbar(doc, pdfAttachment);
+        pdfContainer.appendChild(toolbar);
+
+        // 创建PDF查看器容器
+        const viewerContainer = doc.createElement("div");
+        viewerContainer.style.cssText = `
+          flex: 1;
+          overflow: hidden;
+          position: relative;
+          background: #f5f5f5;
+        `;
+
+        // 尝试不同的PDF显示方法
+        this.loadPDFContent(viewerContainer, pdfAttachment);
+        pdfContainer.appendChild(viewerContainer);
+
+        ztoolkit.log("PDF viewer container created");
+      } else {
+        // 没有找到PDF附件
+        this.createErrorMessage(pdfContainer, "未找到PDF附件");
+      }
+    } catch (error) {
+      ztoolkit.log("Error creating PDF content:", error);
+      this.createErrorMessage(
+        pdfContainer,
+        "PDF加载错误: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
+
+    return pdfContainer;
+  }
+
+  /**
+   * 创建PDF工具栏
+   */
+  private static createPDFToolbar(
+    doc: Document,
+    pdfAttachment: Zotero.Item,
+  ): HTMLElement {
+    const toolbar = doc.createElement("div");
+    toolbar.style.cssText = `
+      height: 40px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      font-size: 13px;
+      border-radius: 4px 4px 0 0;
+    `;
+
+    // PDF文件名
+    const filename =
+      pdfAttachment.attachmentFilename ||
+      pdfAttachment.getField("title") ||
+      "PDF Document";
+    const nameSpan = doc.createElement("span");
+    nameSpan.style.cssText = `
+      flex: 1;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `;
+    nameSpan.textContent = filename;
+
+    // 在Zotero中打开按钮
+    const openInZoteroBtn = doc.createElement("button");
+    openInZoteroBtn.style.cssText = `
+      background: #3498db;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: background-color 0.2s;
+    `;
+    openInZoteroBtn.textContent = "在Zotero中打开";
+    openInZoteroBtn.title = "Open PDF in Zotero";
+
+    openInZoteroBtn.addEventListener("click", async () => {
+      try {
+        await this.openPDFInTab(pdfAttachment);
+        this.closePreview();
+      } catch (error) {
+        ztoolkit.log("Error opening PDF in Zotero:", error);
+      }
+    });
+
+    openInZoteroBtn.addEventListener("mouseenter", () => {
+      openInZoteroBtn.style.backgroundColor = "#2980b9";
+    });
+
+    openInZoteroBtn.addEventListener("mouseleave", () => {
+      openInZoteroBtn.style.backgroundColor = "#3498db";
+    });
+
+    toolbar.appendChild(nameSpan);
+    toolbar.appendChild(openInZoteroBtn);
+
+    return toolbar;
+  }
+
+  /**
+   * 加载PDF内容
+   */
+  private static async loadPDFContent(
+    container: HTMLElement,
+    pdfAttachment: Zotero.Item,
+  ): Promise<void> {
+    try {
+      // 方法1: 尝试使用Zotero内置的PDF.js
+      if (await this.loadWithZoteroPDFJS(container, pdfAttachment)) {
+        return;
+      }
+
+      // 方法2: 尝试使用embed标签
+      if (await this.loadWithEmbed(container, pdfAttachment)) {
+        return;
+      }
+
+      // 方法3: 尝试使用object标签
+      if (await this.loadWithObject(container, pdfAttachment)) {
+        return;
+      }
+
+      // 方法4: 显示PDF信息和打开按钮
+      this.showPDFInfo(container, pdfAttachment);
+    } catch (error) {
+      ztoolkit.log("Error loading PDF content:", error);
+      this.createErrorMessage(
+        container,
+        "PDF加载失败: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
+  }
+
+  /**
+   * 使用Zotero内置PDF.js加载PDF
+   */
+  private static async loadWithZoteroPDFJS(
+    container: HTMLElement,
+    pdfAttachment: Zotero.Item,
+  ): Promise<boolean> {
+    try {
+      const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
+      if (!doc) return false;
+
+      // 尝试访问Zotero的PDF.js
+      const mainWindow = Zotero.getMainWindow();
+      if (!mainWindow) return false;
+
+      // 获取PDF文件路径
+      const pdfPath = this.getPDFPath(pdfAttachment);
+      if (!pdfPath) return false;
+
+      // 创建iframe使用PDF.js查看器
+      const iframe = doc.createElement("iframe");
+      iframe.style.cssText = `
+        width: 100%;
+        height: 100%;
+        border: none;
+      `;
+
+      // 尝试使用Zotero内置的PDF.js
+      const pdfJSPath = "resource://pdf.js/web/viewer.html";
+      iframe.src = `${pdfJSPath}?file=${encodeURIComponent(pdfPath)}`;
+
+      // 添加加载监听器
+      let loadSuccess = false;
+      iframe.onload = () => {
+        loadSuccess = true;
+        ztoolkit.log("PDF loaded with Zotero PDF.js");
+      };
+
+      iframe.onerror = () => {
+        ztoolkit.log("Failed to load with Zotero PDF.js");
+      };
+
+      container.appendChild(iframe);
+
+      // 等待一段时间检查是否加载成功
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          if (loadSuccess) {
+            resolve(true);
+          } else {
+            if (iframe.parentNode) {
+              iframe.parentNode.removeChild(iframe);
+            }
+            resolve(false);
+          }
+        }, 2000);
+      });
+    } catch (error) {
+      ztoolkit.log("Error with Zotero PDF.js method:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 使用embed标签加载PDF
+   */
+  private static async loadWithEmbed(
+    container: HTMLElement,
+    pdfAttachment: Zotero.Item,
+  ): Promise<boolean> {
+    try {
+      const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
+      if (!doc) return false;
+
+      const pdfPath = this.getPDFPath(pdfAttachment);
+      if (!pdfPath) return false;
+
+      const embed = doc.createElement("embed");
+      embed.style.cssText = `
+        width: 100%;
+        height: 100%;
+        border: none;
+      `;
+      embed.src = pdfPath;
+      embed.type = "application/pdf";
+
+      let loadSuccess = false;
+      embed.onload = () => {
+        loadSuccess = true;
+        ztoolkit.log("PDF loaded with embed tag");
+      };
+
+      container.appendChild(embed);
+
+      // 等待一段时间检查是否加载成功
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          if (loadSuccess || embed.clientHeight > 0) {
+            resolve(true);
+          } else {
+            if (embed.parentNode) {
+              embed.parentNode.removeChild(embed);
+            }
+            resolve(false);
+          }
+        }, 1500);
+      });
+    } catch (error) {
+      ztoolkit.log("Error with embed method:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 使用object标签加载PDF
+   */
+  private static async loadWithObject(
+    container: HTMLElement,
+    pdfAttachment: Zotero.Item,
+  ): Promise<boolean> {
+    try {
+      const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
+      if (!doc) return false;
+
+      const pdfPath = this.getPDFPath(pdfAttachment);
+      if (!pdfPath) return false;
+
+      const object = doc.createElement("object");
+      object.style.cssText = `
+        width: 100%;
+        height: 100%;
+        border: none;
+      `;
+      object.data = pdfPath;
+      object.type = "application/pdf";
+
+      // 添加fallback内容
+      const fallback = doc.createElement("p");
+      fallback.style.cssText = `
+        text-align: center;
+        color: #666;
+        padding: 20px;
+      `;
+      fallback.textContent = "PDF预览不可用";
+      object.appendChild(fallback);
+
+      container.appendChild(object);
+
+      // 等待一段时间检查是否加载成功
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // 检查object是否有内容
+          if (object.clientHeight > fallback.clientHeight) {
+            ztoolkit.log("PDF loaded with object tag");
+            resolve(true);
+          } else {
+            if (object.parentNode) {
+              object.parentNode.removeChild(object);
+            }
+            resolve(false);
+          }
+        }, 1500);
+      });
+    } catch (error) {
+      ztoolkit.log("Error with object method:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 显示PDF信息（当无法直接预览时）
+   */
+  private static showPDFInfo(
+    container: HTMLElement,
+    pdfAttachment: Zotero.Item,
+  ): void {
+    const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
+    if (!doc) return;
+
+    const infoDiv = doc.createElement("div");
+    infoDiv.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 40px;
+      text-align: center;
+      background: white;
+    `;
+
+    // PDF图标
+    const pdfIcon = doc.createElement("div");
+    pdfIcon.style.cssText = `
+      font-size: 64px;
+      margin-bottom: 16px;
+      color: #e74c3c;
+    `;
+    pdfIcon.innerHTML = "📄";
+
+    // 文件信息
+    const filename =
+      pdfAttachment.attachmentFilename ||
+      pdfAttachment.getField("title") ||
+      "PDF Document";
+    const nameDiv = doc.createElement("div");
+    nameDiv.style.cssText = `
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    `;
+    nameDiv.textContent = filename;
+
+    // 提示信息
+    const hintDiv = doc.createElement("div");
+    hintDiv.style.cssText = `
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    `;
+    hintDiv.textContent = "PDF预览暂时不可用，您可以在Zotero中打开此PDF文件。";
+
+    // 打开按钮
+    const openButton = doc.createElement("button");
+    openButton.style.cssText = `
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    `;
+    openButton.textContent = "在Zotero中打开PDF";
+
+    openButton.addEventListener("click", async () => {
+      try {
+        await this.openPDFInTab(pdfAttachment);
+        this.closePreview();
+      } catch (error) {
+        ztoolkit.log("Error opening PDF:", error);
+      }
+    });
+
+    openButton.addEventListener("mouseenter", () => {
+      openButton.style.backgroundColor = "#2980b9";
+    });
+
+    openButton.addEventListener("mouseleave", () => {
+      openButton.style.backgroundColor = "#3498db";
+    });
+
+    infoDiv.appendChild(pdfIcon);
+    infoDiv.appendChild(nameDiv);
+    infoDiv.appendChild(hintDiv);
+    infoDiv.appendChild(openButton);
+
+    container.appendChild(infoDiv);
+    ztoolkit.log("PDF info displayed");
+  }
+
+  /**
+   * 获取第一个PDF附件
+   */
+  private static getFirstPDFAttachment(item: Zotero.Item): Zotero.Item | null {
+    try {
+      const attachmentIDs = item.getAttachments();
+      for (const attachmentID of attachmentIDs) {
+        const attachment = Zotero.Items.get(attachmentID);
+        if (attachment && attachment.isPDFAttachment()) {
+          return attachment;
+        }
+      }
+      return null;
+    } catch (error) {
+      ztoolkit.log("Error getting first PDF attachment:", error);
+      return null;
+    }
+  }
+
+  /**
+   * 获取PDF文件路径
+   */
+  private static getPDFPath(pdfAttachment: Zotero.Item): string | null {
+    try {
+      // 尝试获取PDF文件路径
+      if (pdfAttachment.isLinkedFileAttachment()) {
+        // 链接文件附件，获取文件路径
+        const filePath = pdfAttachment.getFilePath();
+        if (filePath) {
+          const fileURI = Zotero.File.pathToFileURI(filePath);
+          ztoolkit.log("PDF file URI (linked):", fileURI);
+          return fileURI;
+        }
+      } else if (pdfAttachment.isStoredFileAttachment()) {
+        // 存储文件附件，使用文件名构建路径
+        const filename = pdfAttachment.attachmentFilename;
+        if (filename) {
+          // 构建Zotero存储路径
+          const storagePath =
+            Zotero.Attachments.getStorageDirectory(pdfAttachment);
+          if (storagePath) {
+            const pathSep = Zotero.isWin ? "\\" : "/";
+            const filePath = Zotero.File.pathToFileURI(
+              storagePath.path + pathSep + filename,
+            );
+            ztoolkit.log("PDF file URI (stored):", filePath);
+            return filePath;
+          }
+        }
+      }
+      return null;
+    } catch (error) {
+      ztoolkit.log("Error getting PDF path:", error);
+      return null;
+    }
+  }
+
+  /**
+   * 创建错误信息显示
+   */
+  private static createErrorMessage(container: HTMLElement, message: string) {
+    const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
+    if (!doc) {
+      ztoolkit.log("Cannot create error message - no document available");
+      return;
+    }
+    const errorDiv = doc.createElement("div");
+    errorDiv.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #666;
+      font-size: 16px;
+      text-align: center;
+      padding: 20px;
+    `;
+    errorDiv.textContent = message;
+    container.appendChild(errorDiv);
+  }
+
+  /**
+   * 切换编辑模式
+   */
+  static toggleEditMode(item: Zotero.Item) {
+    try {
+      this.isEditMode = !this.isEditMode;
+      ztoolkit.log("Toggle edit mode:", this.isEditMode);
+
+      if (this.isEditMode) {
+        // 进入编辑模式，初始化编辑数据
+        this.editedData = {
+          title: item.getField("title") || "",
+          abstractNote: item.getField("abstractNote") || "",
+          tags: item.getTags().map((tagData) => tagData.tag || tagData),
+        };
+      }
+
+      // 重新创建预览内容
+      this.refreshPreviewContent(item);
+    } catch (error) {
+      ztoolkit.log("Error toggling edit mode:", error);
+    }
+  }
+
+  /**
+   * 刷新预览内容
+   */
+  static refreshPreviewContent(item: Zotero.Item) {
+    try {
+      if (!this.previewOverlay) {
+        return;
+      }
+
+      // 找到内容区域
+      const contentArea = this.previewOverlay.querySelector(
+        ".content-area",
+      ) as HTMLElement;
+      if (!contentArea) {
+        return;
+      }
+
+      // 清除现有内容
+      contentArea.innerHTML = "";
+
+      // 创建新的信息面板
+      const itemInfo = this.createItemInfoPanel(
+        this.previewOverlay.ownerDocument!,
+        item,
+      );
+      contentArea.appendChild(itemInfo);
+
+      // 更新PDF按钮状态
+      const pdfButton = this.previewOverlay.querySelector(
+        ".pdf-button",
+      ) as HTMLElement;
+      if (pdfButton) {
+        pdfButton.title = this.isPDFMode ? "Show Info" : "Show PDF";
+        const pdfIcon = pdfButton.querySelector("span");
+        if (pdfIcon) {
+          pdfIcon.innerHTML = this.isPDFMode ? "📄" : "📕";
+        }
+      }
+
+      // 更新编辑按钮状态
+      const editButton = this.previewOverlay.querySelector(
+        ".edit-button",
+      ) as HTMLElement;
+      if (editButton) {
+        if (this.isEditMode) {
+          editButton.style.backgroundColor = "#ff9800";
+          editButton.title = "Save Changes";
+          const editIcon = editButton.querySelector("span");
+          if (editIcon) {
+            editIcon.innerHTML = "💾";
+          }
+        } else {
+          editButton.style.backgroundColor = "#4caf50";
+          editButton.title = "Edit Item";
+          const editIcon = editButton.querySelector("span");
+          if (editIcon) {
+            editIcon.innerHTML = "✎";
+          }
+        }
+      }
+    } catch (error) {
+      ztoolkit.log("Error refreshing preview content:", error);
+    }
+  }
+
+  /**
+   * 保存编辑的内容
+   */
+  static async saveEditedContent(item: Zotero.Item) {
+    try {
+      ztoolkit.log("Saving edited content:", this.editedData);
+
+      // 保存基本字段
+      const fieldsToSave = ["title", "abstractNote"];
+
+      for (const field of fieldsToSave) {
+        if (this.editedData[field] !== undefined) {
+          const currentValue = item.getField(field) || "";
+          if (this.editedData[field] !== currentValue) {
+            item.setField(field, this.editedData[field]);
+            ztoolkit.log(`Updated ${field}: ${this.editedData[field]}`);
+          }
+        }
+      }
+
+      // 保存标签
+      if (this.editedData.tags && Array.isArray(this.editedData.tags)) {
+        const currentTags = item
+          .getTags()
+          .map((tagData) => tagData.tag || tagData);
+        const newTags = this.editedData.tags.filter((tag) => tag.trim());
+
+        // 检查标签是否有变化
+        const tagsChanged =
+          JSON.stringify(currentTags.sort()) !== JSON.stringify(newTags.sort());
+
+        if (tagsChanged) {
+          // 删除所有现有标签
+          item.setTags([]);
+
+          // 添加新标签
+          for (const tag of newTags) {
+            if (tag.trim()) {
+              item.addTag(tag.trim());
+            }
+          }
+          ztoolkit.log(`Updated tags: ${newTags.join(", ")}`);
+        }
+      }
+
+      // 保存到数据库
+      await item.save();
+      ztoolkit.log("Item saved successfully");
+
+      // 退出编辑模式
+      this.isEditMode = false;
+      this.editedData = {};
+      this.refreshPreviewContent(item);
+
+      // 显示保存成功提示
+      this.showSaveNotification(true);
+    } catch (error) {
+      ztoolkit.log("Error saving edited content:", error);
+      this.showSaveNotification(false);
+    }
+  }
+
+  /**
+   * 显示保存通知
+   */
+  static showSaveNotification(success: boolean) {
+    try {
+      const editButton = this.previewOverlay?.querySelector(
+        ".edit-button",
+      ) as HTMLElement;
+      if (editButton) {
+        const originalBg = editButton.style.backgroundColor;
+        const originalTitle = editButton.title;
+
+        if (success) {
+          editButton.style.backgroundColor = "#4caf50";
+          editButton.title = "Saved!";
+          const icon = editButton.querySelector("span");
+          if (icon) {
+            const originalIcon = icon.innerHTML;
+            icon.innerHTML = "✓";
+            setTimeout(() => {
+              icon.innerHTML = originalIcon;
+            }, 2000);
+          }
+        } else {
+          editButton.style.backgroundColor = "#f44336";
+          editButton.title = "Save failed!";
+        }
+
+        setTimeout(() => {
+          editButton.style.backgroundColor = originalBg;
+          editButton.title = originalTitle;
+        }, 2000);
+      }
+    } catch (error) {
+      ztoolkit.log("Error showing save notification:", error);
+    }
+  }
+
+  /**
+   * 检查文献是否有PDF附件
+   */
+  static checkForPDFAttachment(item: Zotero.Item): boolean {
+    try {
+      const attachmentIDs = item.getAttachments();
+      for (const attachmentID of attachmentIDs) {
+        const attachment = Zotero.Items.get(attachmentID);
+        if (attachment && attachment.isPDFAttachment()) {
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      ztoolkit.log("Error checking PDF attachment:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 切换PDF模式
+   */
+  static togglePDFMode(item: Zotero.Item) {
+    try {
+      this.isPDFMode = !this.isPDFMode;
+      ztoolkit.log("Toggle PDF mode:", this.isPDFMode);
+
+      // 刷新预览内容
+      this.refreshPreviewContent(item);
+    } catch (error) {
+      ztoolkit.log("Error toggling PDF mode:", error);
+    }
+  }
+
+  /**
    * 关闭预览窗口
    */
   static closePreview() {
@@ -1050,6 +2125,11 @@ export class QuickPreview {
       }
       this.previewOverlay = null;
       this.currentItem = null;
+      // 重置编辑状态
+      this.isEditMode = false;
+      this.editedData = {};
+      this.tagsExpanded = false;
+      this.isPDFMode = false;
     } catch (error) {
       ztoolkit.log("Error closing preview:", error);
     }
