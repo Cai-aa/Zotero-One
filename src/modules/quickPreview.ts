@@ -1430,7 +1430,7 @@ export class QuickPreview {
       this.createErrorMessage(
         pdfContainer,
         "PDF加载错误: " +
-          (error instanceof Error ? error.message : String(error)),
+        (error instanceof Error ? error.message : String(error)),
       );
     }
 
@@ -1518,8 +1518,8 @@ export class QuickPreview {
     pdfAttachment: Zotero.Item,
   ): Promise<void> {
     try {
-      // 方法1: 尝试使用Zotero内置的PDF.js
-      if (await this.loadWithZoteroPDFJS(container, pdfAttachment)) {
+      // 方法1: 尝试直接使用iframe加载PDF (Zotero 7最兼容的方式)
+      if (await this.loadWithSimpleIframe(container, pdfAttachment)) {
         return;
       }
 
@@ -1540,15 +1540,15 @@ export class QuickPreview {
       this.createErrorMessage(
         container,
         "PDF加载失败: " +
-          (error instanceof Error ? error.message : String(error)),
+        (error instanceof Error ? error.message : String(error)),
       );
     }
   }
 
   /**
-   * 使用Zotero内置PDF.js加载PDF
+   * 使用简单的iframe加载PDF
    */
-  private static async loadWithZoteroPDFJS(
+  private static async loadWithSimpleIframe(
     container: HTMLElement,
     pdfAttachment: Zotero.Item,
   ): Promise<boolean> {
@@ -1556,54 +1556,43 @@ export class QuickPreview {
       const doc = container.ownerDocument || Zotero.getMainWindow()?.document;
       if (!doc) return false;
 
-      // 尝试访问Zotero的PDF.js
-      const mainWindow = Zotero.getMainWindow();
-      if (!mainWindow) return false;
-
       // 获取PDF文件路径
       const pdfPath = this.getPDFPath(pdfAttachment);
       if (!pdfPath) return false;
 
-      // 创建iframe使用PDF.js查看器
+      ztoolkit.log("Loading PDF with simple iframe:", pdfPath);
+
+      // 创建iframe
       const iframe = doc.createElement("iframe");
       iframe.style.cssText = `
         width: 100%;
         height: 100%;
         border: none;
+        background: white;
       `;
 
-      // 尝试使用Zotero内置的PDF.js
-      const pdfJSPath = "resource://pdf.js/web/viewer.html";
-      iframe.src = `${pdfJSPath}?file=${encodeURIComponent(pdfPath)}`;
-
-      // 添加加载监听器
-      let loadSuccess = false;
-      iframe.onload = () => {
-        loadSuccess = true;
-        ztoolkit.log("PDF loaded with Zotero PDF.js");
-      };
-
-      iframe.onerror = () => {
-        ztoolkit.log("Failed to load with Zotero PDF.js");
-      };
+      // 直接设置src为PDF路径
+      iframe.src = pdfPath;
 
       container.appendChild(iframe);
 
-      // 等待一段时间检查是否加载成功
+      // 简单的加载成功检查
       return new Promise((resolve) => {
+        iframe.onload = () => {
+          ztoolkit.log("PDF iframe loaded");
+          resolve(true);
+        };
+        iframe.onerror = () => {
+          ztoolkit.log("PDF iframe error");
+          resolve(false);
+        };
+        // 设置一个超时，如果onload没触发但也可能显示了
         setTimeout(() => {
-          if (loadSuccess) {
-            resolve(true);
-          } else {
-            if (iframe.parentNode) {
-              iframe.parentNode.removeChild(iframe);
-            }
-            resolve(false);
-          }
-        }, 2000);
+          resolve(true);
+        }, 500);
       });
     } catch (error) {
-      ztoolkit.log("Error with Zotero PDF.js method:", error);
+      ztoolkit.log("Error with simple iframe method:", error);
       return false;
     }
   }
