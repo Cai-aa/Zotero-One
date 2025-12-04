@@ -137,48 +137,6 @@ export class UIExampleFactory {
   }
 
   @example
-  static registerRightClickMenuItem() {
-    const menuIcon = `chrome://${addon.data.config.addonRef}/content/icons/favicon@0.5x.png`;
-    // item menuitem with icon
-    ztoolkit.Menu.register("item", {
-      tag: "menuitem",
-      id: "zotero-itemmenu-addontemplate-test",
-      label: "Example Menu Item",
-      commandListener: (ev) => {
-        new ztoolkit.ProgressWindow(addon.data.config.addonName)
-          .createLine({
-            text: "Example Menu Item Clicked!",
-            type: "success",
-            progress: 100,
-          })
-          .show();
-      },
-      icon: menuIcon,
-    });
-  }
-
-  @example
-  static registerRightClickMenuPopup(win: Window) {
-    ztoolkit.Menu.register(
-      "item",
-      {
-        tag: "menu",
-        label: "Example Popup",
-        children: [
-          {
-            tag: "menuitem",
-            label: "Example Submenu",
-            oncommand: "alert('Hello World! Sub Menuitem.')",
-          },
-        ],
-      },
-      "before",
-      win.document?.querySelector(
-        "#zotero-itemmenu-addontemplate-test",
-      ) as XUL.MenuItem,
-    );
-  }
-
   @example
   static registerWindowMenuWithSeparator() {
     ztoolkit.Menu.register("menuFile", {

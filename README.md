@@ -17,7 +17,12 @@
 
 ### 👁️ Quick Preview
 
-- **Literature information preview**: After selecting a document, press the space bar to quickly preview the abstract and other information of the document without opening the file or turning your head to look at the information bar on the right
+- **Literature information preview**: Middle-click on an item to quickly preview the abstract and other information without opening the file
+- **Title and abstract preview**: View document title, abstract, and translated abstract (if available)
+- **Note preview**: Switch to view all notes associated with the item
+- **PDF preview**: Quick access to view PDF attachments
+- **Customizable display**: Toggle between item info, notes, and PDF preview modes
+- **Edit functionality**: Edit item information directly from the preview panel
   ![Quick Preview Modal](image/模态窗口文献信息预览.png)
 
 ### 🌐 User Interface
@@ -53,9 +58,21 @@ Auto-update functionality will be available in future releases.
 ### Quick Preview
 
 1. Select any item you want to preview
-2. Press the space bar to quickly preview the document
-3. Press the space bar again or ESC key to close the preview modal
-4. Click the button in the top-right corner of the modal to open the PDF in a Zotero tab for in-depth reading
+2. **Middle-click** on the item to open the quick preview modal
+3. In the preview panel, you can:
+   - View the document title, abstract, and abstract translation
+   - Click the **📝 Notes** button to switch to notes view
+   - Click the **📕 PDF** button to switch to PDF preview
+   - Click the **✎ Edit** button to edit item information
+   - Click the **🗂 Open** button to open the item in a Zotero tab
+4. **Middle-click** again or press **ESC** to close the preview modal
+
+**Features:**
+
+- **Notes Display**: View all notes associated with the item with centered note titles
+- **PDF Preview**: Quick preview of PDF attachments
+- **Title Display**: View document title clearly
+- **Abstract & Translation**: See both original and translated abstracts
 
 ## 🛠️ Development
 
