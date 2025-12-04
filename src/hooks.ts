@@ -89,10 +89,6 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
 
   UIExampleFactory.registerStyleSheet(win);
 
-  UIExampleFactory.registerRightClickMenuItem();
-
-  UIExampleFactory.registerRightClickMenuPopup(win);
-
   UIExampleFactory.registerWindowMenuWithSeparator();
 
   PromptExampleFactory.registerNormalCommandExample();

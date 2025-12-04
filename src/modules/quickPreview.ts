@@ -10,6 +10,7 @@ export class QuickPreview {
   private static editedData: { [key: string]: any } = {};
   private static tagsExpanded = false;
   private static isPDFMode = false;
+  private static isNotesMode = false;
 
   /**
    * 初始化快速预览功能
@@ -34,7 +35,7 @@ export class QuickPreview {
   }
 
   /**
-   * 设置键盘事件监听器
+   * 设置鼠标中键事件监听器
    */
   private static setupKeyboardListeners() {
     // 移除已存在的监听器
@@ -44,24 +45,24 @@ export class QuickPreview {
 
     // 创建新的事件监听器
     this.keyEventListener = (event: Event) => {
-      this.handleKeyboardEvent(event as KeyboardEvent);
+      this.handleMouseMiddleClick(event as MouseEvent);
     };
 
-    ztoolkit.log("Setting up keyboard listeners...");
+    ztoolkit.log("Setting up mouse middle click listeners...");
 
-    // 在主窗口上添加键盘事件监听
+    // 在主窗口上添加鼠标事件监听
     const mainWindow = Zotero.getMainWindow();
     ztoolkit.log("Main window for event listener:", mainWindow);
     if (mainWindow && mainWindow.document) {
       mainWindow.document.addEventListener(
-        "keydown",
+        "mousedown",
         this.keyEventListener,
         true,
       );
-      ztoolkit.log("Keyboard event listeners added to main window");
+      ztoolkit.log("Mouse middle click event listeners added to main window");
     } else {
       ztoolkit.log(
-        "Could not add keyboard listener - no main window or document",
+        "Could not add mouse listener - no main window or document",
       );
     }
 
@@ -70,14 +71,14 @@ export class QuickPreview {
     ztoolkit.log("All Zotero windows:", windows);
     windows.forEach((win, index) => {
       if (win && win.document) {
-        win.document.addEventListener("keydown", this.keyEventListener!, true);
-        ztoolkit.log(`Added keyboard listener to window ${index}`);
+        win.document.addEventListener("mousedown", this.keyEventListener!, true);
+        ztoolkit.log(`Added mouse listener to window ${index}`);
       }
     });
   }
 
   /**
-   * 移除键盘事件监听器
+   * 移除鼠标事件监听器
    */
   private static removeKeyboardListeners() {
     if (!this.keyEventListener) {
@@ -87,7 +88,7 @@ export class QuickPreview {
     const mainWindow = Zotero.getMainWindow();
     if (mainWindow && mainWindow.document) {
       mainWindow.document.removeEventListener(
-        "keydown",
+        "mousedown",
         this.keyEventListener,
         true,
       );
@@ -98,7 +99,7 @@ export class QuickPreview {
     windows.forEach((win) => {
       if (win && win.document) {
         win.document.removeEventListener(
-          "keydown",
+          "mousedown",
           this.keyEventListener!,
           true,
         );
@@ -107,76 +108,44 @@ export class QuickPreview {
   }
 
   /**
-   * 处理键盘事件
+   * 处理鼠标中键点击事件
    */
-  private static handleKeyboardEvent(event: KeyboardEvent) {
-    ztoolkit.log(`Key pressed: ${event.key}, code: ${event.code}`);
-
-    // 空格键 (keyCode 32, key ' ')
-    if (event.code === "Space" || event.key === " ") {
-      ztoolkit.log("Space key detected");
-
-      // 检查是否在输入框或文本区域中
-      const target = event.target as HTMLElement;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          (target as any).contentEditable === "true" ||
-          target.closest("input") ||
-          target.closest("textarea") ||
-          target.closest('[contenteditable="true"]') ||
-          // 添加对Zotero特定搜索框的检查
-          target.id?.includes("search") ||
-          target.className?.includes("search") ||
-          target.closest('[id*="search"]') ||
-          target.closest('[class*="search"]') ||
-          target.closest('[role="searchbox"]') ||
-          target.closest('[type="search"]') ||
-          // 检查是否在Zotero的快速搜索框中
-          target.closest("#zotero-tb-search") ||
-          target.closest(".zotero-tb-search") ||
-          target.closest('[placeholder*="search" i]') ||
-          target.closest('[placeholder*="搜索" i]') ||
-          // 检查焦点是否在可编辑元素中
-          target.hasAttribute?.("contenteditable") ||
-          // 检查是否在文本输入相关的元素中
-          (target as HTMLInputElement).type === "text" ||
-          (target as HTMLInputElement).type === "search" ||
-          (target as HTMLInputElement).type === "email" ||
-          (target as HTMLInputElement).type === "url" ||
-          (target as HTMLInputElement).type === "password")
-      ) {
-        ztoolkit.log(
-          "Event target is in input field, search box or editable area, ignoring space key",
-        );
-        return; // 在输入框、搜索框或可编辑区域中不触发预览
-      }
-
-      // 如果预览窗口已打开，关闭它
-      if (this.previewOverlay) {
-        ztoolkit.log("Preview is open, closing with spacebar");
-        event.preventDefault();
-        event.stopPropagation();
-        this.closePreview();
-        return;
-      }
-
-      // 如果预览窗口未打开，检查是否有选中的文献来打开预览
-      const selectedItem = this.getSelectedItem();
-      ztoolkit.log("Selected item:", selectedItem);
-      if (selectedItem) {
-        ztoolkit.log("Preventing default and showing preview");
-        event.preventDefault();
-        event.stopPropagation();
-        this.showPreview(selectedItem);
-      } else {
-        ztoolkit.log("No item selected for preview");
-      }
+  private static handleMouseMiddleClick(event: MouseEvent) {
+    // 鼠标中键 button = 1
+    if (event.button !== 1) {
+      return;
     }
 
+    ztoolkit.log("Mouse middle click detected");
+
+    // 如果预览窗口已打开，关闭它
+    if (this.previewOverlay) {
+      ztoolkit.log("Preview is open, closing with middle click");
+      event.preventDefault();
+      event.stopPropagation();
+      this.closePreview();
+      return;
+    }
+
+    // 如果预览窗口未打开，检查是否有选中的文献来打开预览
+    const selectedItem = this.getSelectedItem();
+    ztoolkit.log("Selected item:", selectedItem);
+    if (selectedItem) {
+      ztoolkit.log("Preventing default and showing preview");
+      event.preventDefault();
+      event.stopPropagation();
+      this.showPreview(selectedItem);
+    } else {
+      ztoolkit.log("No item selected for preview");
+    }
+  }
+
+  /**
+   * 处理键盘事件（ESC键关闭预览）
+   */
+  private static handleKeyboardEvent(event: KeyboardEvent) {
     // ESC键关闭预览
-    else if (event.code === "Escape" || event.key === "Escape") {
+    if (event.code === "Escape" || event.key === "Escape") {
       ztoolkit.log("ESC key detected");
       if (this.previewOverlay) {
         ztoolkit.log("Closing preview with ESC");
@@ -511,6 +480,53 @@ export class QuickPreview {
       });
     }
 
+    // 笔记按钮 - 只有当笔记存在时才显示
+    const hasNotes = item.getNotes && item.getNotes().length > 0;
+    let notesButton: HTMLElement | null = null;
+
+    if (hasNotes) {
+      notesButton = doc.createElement("button");
+      notesButton.className = "notes-button";
+      notesButton.style.cssText = `
+        background: #9c27b0;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 4px;
+      `;
+      notesButton.title = this.isNotesMode ? "Show Info" : "Show Notes";
+
+      // 添加笔记图标
+      const notesIcon = doc.createElement("span");
+      notesIcon.style.cssText = `
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      `;
+      notesIcon.innerHTML = this.isNotesMode ? "📄" : "📝";
+      notesButton.appendChild(notesIcon);
+
+      notesButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.toggleNotesMode(item);
+      });
+
+      notesButton.addEventListener("mouseenter", () => {
+        notesButton!.style.backgroundColor = "#8e24aa";
+      });
+
+      notesButton.addEventListener("mouseleave", () => {
+        notesButton!.style.backgroundColor = "#9c27b0";
+      });
+    }
+
     // 编辑按钮
     const editButton = doc.createElement("button");
     editButton.className = "edit-button";
@@ -640,6 +656,10 @@ export class QuickPreview {
       closeButton.style.backgroundColor = "#ff5f56";
     });
 
+    // 添加笔记按钮（如果存在）
+    if (notesButton) {
+      buttonContainer.appendChild(notesButton);
+    }
     // 添加PDF按钮（如果存在）
     if (pdfButton) {
       buttonContainer.appendChild(pdfButton);
@@ -968,21 +988,57 @@ export class QuickPreview {
       });
       infoCard.appendChild(titleInput);
     } else {
-      const title = doc.createElement("h1");
-      title.style.cssText = `
-        margin: 0 0 16px 0;
-        font-size: 20px;
-        font-weight: 600;
-        color: #333;
-        line-height: 1.4;
-        user-select: text;
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        cursor: text;
-      `;
-      title.textContent = item.getField("title") || "Untitled";
-      infoCard.appendChild(title);
+      // 尝试获取标题翻译
+      const titleTranslation =
+        item.getField("titleTranslated") ||
+        item.getField("translatedTitle") ||
+        item.getField("titleTranslation") ||
+        null;
+
+      if (titleTranslation) {
+        const titleLabel = doc.createElement("h2");
+        titleLabel.style.cssText = `
+          margin: 0 0 8px 0;
+          font-size: 12px;
+          font-weight: 600;
+          color: #999;
+          letter-spacing: 0px;
+        `;
+        titleLabel.textContent = getString("quick-preview-title-label");
+        infoCard.appendChild(titleLabel);
+
+        const title = doc.createElement("h1");
+        title.style.cssText = `
+          margin: 0 0 16px 0;
+          font-size: 20px;
+          font-weight: 600;
+          color: #333;
+          line-height: 1.4;
+          user-select: text;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          cursor: text;
+        `;
+        title.textContent = titleTranslation;
+        infoCard.appendChild(title);
+      } else {
+        const title = doc.createElement("h1");
+        title.style.cssText = `
+          margin: 0 0 16px 0;
+          font-size: 20px;
+          font-weight: 600;
+          color: #333;
+          line-height: 1.4;
+          user-select: text;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          cursor: text;
+        `;
+        title.textContent = item.getField("title") || "Untitled";
+        infoCard.appendChild(title);
+      }
     }
 
     // 作者
@@ -1011,10 +1067,18 @@ export class QuickPreview {
       infoCard.appendChild(authorsDiv);
     }
 
-    // 摘要
+    // 摘要翻译
     const abstractText = this.isEditMode
       ? this.editedData.abstractNote
       : item.getField("abstractNote");
+
+    // 获取翻译版本的摘要
+    let abstractTranslated = "";
+    if (abstractText && !this.isEditMode) {
+      abstractTranslated = this.getTranslatedAbstract(item, abstractText);
+    } else if (this.isEditMode) {
+      abstractTranslated = abstractText;
+    }
     if (abstractText || this.isEditMode) {
       const abstractTitle = doc.createElement("h3");
       abstractTitle.style.cssText = `
@@ -1028,7 +1092,7 @@ export class QuickPreview {
         -ms-user-select: text;
         cursor: text;
       `;
-      abstractTitle.textContent = "Abstract";
+      abstractTitle.textContent = "摘要翻译";
 
       if (this.isEditMode) {
         // 编辑模式 - 文本区域
@@ -1068,7 +1132,7 @@ export class QuickPreview {
         infoCard.appendChild(abstractTitle);
         infoCard.appendChild(abstractTextarea);
       } else {
-        // 查看模式 - 显示文本
+        // 查看模式 - 显示翻译后的文本
         const abstractDiv = doc.createElement("div");
         abstractDiv.style.cssText = `
           line-height: 1.5;
@@ -1081,7 +1145,7 @@ export class QuickPreview {
           -ms-user-select: text;
           cursor: text;
         `;
-        abstractDiv.textContent = abstractText;
+        abstractDiv.textContent = abstractTranslated || "暂无翻译";
 
         infoCard.appendChild(abstractTitle);
         infoCard.appendChild(abstractDiv);
@@ -1365,6 +1429,9 @@ export class QuickPreview {
     if (this.isPDFMode) {
       const pdfContent = this.createPDFContent(doc, item);
       container.appendChild(pdfContent);
+    } else if (this.isNotesMode) {
+      const notesContent = this.createNotesContent(doc, item);
+      container.appendChild(notesContent);
     } else {
       const infoContent = this.createItemInfoContent(doc, item);
       container.appendChild(infoContent);
@@ -1380,6 +1447,171 @@ export class QuickPreview {
     });
 
     return container;
+  }
+
+  /**
+   * 创建笔记内容显示
+   */
+  private static createNotesContent(
+    doc: Document,
+    item: Zotero.Item,
+  ): HTMLElement {
+    const notesContainer = doc.createElement("div");
+    notesContainer.style.cssText = `
+      padding: 20px 20px 40px 20px;
+      overflow-y: auto;
+      background: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100%;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+    `;
+
+    try {
+      const notes = item.getNotes();
+
+      if (notes && notes.length > 0) {
+        // 创建笔记标题
+        const title = doc.createElement("h2");
+        title.style.cssText = `
+          margin: 0 0 16px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+          text-align: center;
+        `;
+        title.textContent = getString("quick-preview-notes-label");
+        notesContainer.appendChild(title);
+
+        // 显示每个笔记
+        notes.forEach((noteID, index) => {
+          try {
+            const noteItem = Zotero.Items.get(noteID);
+            if (noteItem && noteItem.note) {
+              // 笔记容器
+              const noteCard = doc.createElement("div");
+              noteCard.style.cssText = `
+                border-left: 4px solid #9c27b0;
+                padding: 0 0 0 16px;
+                margin-bottom: 20px;
+              `;
+
+              // 如果有多个笔记，显示笔记编号
+              if (notes.length > 1) {
+                const noteNumber = doc.createElement("h3");
+                noteNumber.style.cssText = `
+                  margin: 0 0 12px 0;
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #666;
+                `;
+                noteNumber.textContent = `笔记 ${index + 1}`;
+                noteCard.appendChild(noteNumber);
+              }
+
+              // 处理笔记内容：去除HTML标签
+              let noteText = noteItem.note.replace(/<[^>]*>/g, "").trim();
+              
+              // 按段落分割（双换行或多个换行表示新段落）
+              const paragraphs = noteText
+                .split(/\n{2,}/)
+                .map(p => p.trim())
+                .filter(p => p.length > 0);
+
+              // 渲染每个段落
+              paragraphs.forEach((paragraph) => {
+                const lines = paragraph.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+                
+                // 检查是否为列表
+                const isListParagraph = lines.some(line => 
+                  /^[-•*]\s+/.test(line) || /^\d+[\.\)]\s+/.test(line)
+                );
+
+                if (isListParagraph) {
+                  // 列表段落
+                  const listContainer = doc.createElement("div");
+                  listContainer.style.cssText = `
+                    margin-bottom: 12px;
+                  `;
+
+                  lines.forEach((line) => {
+                    const listItem = doc.createElement("div");
+                    listItem.style.cssText = `
+                      line-height: 1.6;
+                      color: #444;
+                      font-size: 15px;
+                      margin-bottom: 6px;
+                      padding-left: 8px;
+                      user-select: text;
+                      -webkit-user-select: text;
+                      -moz-user-select: text;
+                      -ms-user-select: text;
+                      cursor: text;
+                    `;
+
+                    // 识别列表符号
+                    let cleanedLine = line;
+                    if (/^[-•*]\s+/.test(line)) {
+                      cleanedLine = "• " + line.replace(/^[-•*]\s+/, "");
+                    } else if (/^\d+[\.\)]\s+/.test(line)) {
+                      cleanedLine = line.replace(/^\s*/, "");
+                    }
+
+                    listItem.textContent = cleanedLine;
+                    listContainer.appendChild(listItem);
+                  });
+
+                  noteCard.appendChild(listContainer);
+                } else {
+                  // 文本段落
+                  const paragraphElement = doc.createElement("div");
+                  paragraphElement.style.cssText = `
+                    line-height: 1.8;
+                    color: #444;
+                    font-size: 15px;
+                    margin-bottom: 12px;
+                    text-align: justify;
+                    user-select: text;
+                    -webkit-user-select: text;
+                    -moz-user-select: text;
+                    -ms-user-select: text;
+                    cursor: text;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                  `;
+
+                  // 如果有多行，用换行符连接
+                  const displayText = lines.join("\n");
+                  paragraphElement.textContent = displayText;
+                  noteCard.appendChild(paragraphElement);
+                }
+              });
+
+              notesContainer.appendChild(noteCard);
+            }
+          } catch (error) {
+            ztoolkit.log("Error loading note:", error);
+          }
+        });
+      } else {
+        // 没有笔记
+        this.createErrorMessage(
+          notesContainer,
+          getString("quick-preview-no-notes"),
+        );
+      }
+    } catch (error) {
+      ztoolkit.log("Error creating notes content:", error);
+      this.createErrorMessage(
+        notesContainer,
+        "笔记加载错误: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    }
+
+    return notesContainer;
   }
 
   /**
@@ -1430,7 +1662,7 @@ export class QuickPreview {
       this.createErrorMessage(
         pdfContainer,
         "PDF加载错误: " +
-        (error instanceof Error ? error.message : String(error)),
+          (error instanceof Error ? error.message : String(error)),
       );
     }
 
@@ -1540,7 +1772,7 @@ export class QuickPreview {
       this.createErrorMessage(
         container,
         "PDF加载失败: " +
-        (error instanceof Error ? error.message : String(error)),
+          (error instanceof Error ? error.message : String(error)),
       );
     }
   }
@@ -1943,6 +2175,18 @@ export class QuickPreview {
         }
       }
 
+      // 更新笔记按钮状态
+      const notesButton = this.previewOverlay.querySelector(
+        ".notes-button",
+      ) as HTMLElement;
+      if (notesButton) {
+        notesButton.title = this.isNotesMode ? "Show Info" : "Show Notes";
+        const notesIcon = notesButton.querySelector("span");
+        if (notesIcon) {
+          notesIcon.innerHTML = this.isNotesMode ? "📄" : "📝";
+        }
+      }
+
       // 更新编辑按钮状态
       const editButton = this.previewOverlay.querySelector(
         ".edit-button",
@@ -2094,12 +2338,29 @@ export class QuickPreview {
   static togglePDFMode(item: Zotero.Item) {
     try {
       this.isPDFMode = !this.isPDFMode;
+      this.isNotesMode = false; // 切换到PDF模式时关闭笔记模式
       ztoolkit.log("Toggle PDF mode:", this.isPDFMode);
 
       // 刷新预览内容
       this.refreshPreviewContent(item);
     } catch (error) {
       ztoolkit.log("Error toggling PDF mode:", error);
+    }
+  }
+
+  /**
+   * 切换笔记模式
+   */
+  static toggleNotesMode(item: Zotero.Item) {
+    try {
+      this.isNotesMode = !this.isNotesMode;
+      this.isPDFMode = false; // 切换到笔记模式时关闭PDF模式
+      ztoolkit.log("Toggle notes mode:", this.isNotesMode);
+
+      // 刷新预览内容
+      this.refreshPreviewContent(item);
+    } catch (error) {
+      ztoolkit.log("Error toggling notes mode:", error);
     }
   }
 
@@ -2119,6 +2380,7 @@ export class QuickPreview {
       this.editedData = {};
       this.tagsExpanded = false;
       this.isPDFMode = false;
+      this.isNotesMode = false;
     } catch (error) {
       ztoolkit.log("Error closing preview:", error);
     }
@@ -2208,6 +2470,67 @@ export class QuickPreview {
     if (doc.body) {
       doc.body.appendChild(overlay);
       ztoolkit.log("Test overlay created and added to DOM");
+    }
+  }
+
+  /**
+   * 获取摘要翻译版本
+   */
+  private static getTranslatedAbstract(
+    item: Zotero.Item,
+    originalAbstract: string,
+  ): string {
+    try {
+      if (!originalAbstract) {
+        return "";
+      }
+
+      // 方法1：检查自定义字段中是否有翻译
+      const customField =
+        item.getField("abstractNoteTranslated") ||
+        item.getField("abstractTranslation") ||
+        item.getField("translatedAbstract");
+      if (customField) {
+        ztoolkit.log("Found translated abstract in custom field");
+        return customField;
+      }
+
+      // 方法2：检查笔记中是否有翻译标记
+      const notes = item.getNotes();
+      for (const noteID of notes) {
+        const note = Zotero.Items.get(noteID);
+        if (note && note.note) {
+          const noteText = note.note;
+          // 查找包含翻译标记的笔记
+          const translationMatch = noteText.match(
+            /翻译[：:]\s*([\s\S]*?)$/m,
+          );
+          if (translationMatch && translationMatch[1]) {
+            ztoolkit.log("Found translated abstract in note");
+            return translationMatch[1].trim();
+          }
+        }
+      }
+
+      // 方法3：检查标签中的特殊标记
+      const tags = item.getTags();
+      for (const tagData of tags) {
+        const tag = tagData.tag || tagData;
+        if (
+          typeof tag === "string" &&
+          (tag.includes("translated") || tag.includes("已翻译"))
+        ) {
+          // 如果有翻译标记但没有翻译内容，返回原文
+          return originalAbstract;
+        }
+      }
+
+      // 如果都没有找到，返回原文
+      ztoolkit.log("No translation found, using original abstract");
+      return originalAbstract;
+    } catch (error) {
+      ztoolkit.log("Error getting translated abstract:", error);
+      return originalAbstract;
     }
   }
 
