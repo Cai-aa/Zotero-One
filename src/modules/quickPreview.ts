@@ -1430,7 +1430,7 @@ export class QuickPreview {
       this.createErrorMessage(
         pdfContainer,
         "PDF加载错误: " +
-        (error instanceof Error ? error.message : String(error)),
+          (error instanceof Error ? error.message : String(error)),
       );
     }
 
@@ -1540,7 +1540,7 @@ export class QuickPreview {
       this.createErrorMessage(
         container,
         "PDF加载失败: " +
-        (error instanceof Error ? error.message : String(error)),
+          (error instanceof Error ? error.message : String(error)),
       );
     }
   }
