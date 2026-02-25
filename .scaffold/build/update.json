@@ -5,11 +5,11 @@
         {
           "version": "0.1.0",
           "update_link": "https://github.com/user/zotero-one/releases/download/v0.1.0/zotero-one.xpi",
-          "update_hash": "sha512:b98b37c048564e530af145f226c610de6bf8457cd13d310f5e611b6462f6feeda50c969b57480e92e4a3e94dd1bd5bdf5546342de87af6698753c410664eff95",
+          "update_hash": "sha512:ff8eb911f744317f3d75d4037114b7f386256a68e0b98c886012c18152996f4495d1b164de57e4bcfedb389346605e4f6f07fbedaaa69a23b61ada6b012ec4ce",
           "applications": {
             "zotero": {
               "strict_min_version": "6.999",
-              "strict_max_version": "7.*"
+              "strict_max_version": "8.*"
             }
           }
         }
